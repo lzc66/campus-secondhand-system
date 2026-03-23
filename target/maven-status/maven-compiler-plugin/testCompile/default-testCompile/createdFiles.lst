@@ -1,0 +1,5 @@
+com\campus\secondhand\security\JwtTokenProviderTest.class
+com\campus\secondhand\service\SystemInitServiceTest.class
+com\campus\secondhand\service\AdminAuthServiceTest.class
+com\campus\secondhand\controller\admin\AdminInitControllerTest$TestConfig.class
+com\campus\secondhand\controller\admin\AdminInitControllerTest.class
