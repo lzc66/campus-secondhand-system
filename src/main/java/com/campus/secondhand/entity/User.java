@@ -3,6 +3,8 @@ package com.campus.secondhand.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.campus.secondhand.enums.Gender;
+import com.campus.secondhand.enums.UserAccountStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,7 +26,7 @@ public class User {
     private String email;
     private String passwordHash;
     private String realName;
-    private String gender;
+    private Gender gender;
     private String phone;
     private String qqNo;
     private String wechatNo;
@@ -33,7 +35,7 @@ public class User {
     private String majorName;
     private String className;
     private String dormitoryAddress;
-    private String accountStatus;
+    private UserAccountStatus accountStatus;
     private LocalDateTime lastLoginAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

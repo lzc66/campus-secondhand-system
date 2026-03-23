@@ -6,6 +6,7 @@ import com.campus.secondhand.entity.Admin;
 import com.campus.secondhand.enums.AdminAccountStatus;
 import com.campus.secondhand.enums.AdminRoleCode;
 import com.campus.secondhand.mapper.AdminMapper;
+import com.campus.secondhand.mapper.UserMapper;
 import com.campus.secondhand.security.JwtAuthenticationFilter;
 import com.campus.secondhand.security.JwtProperties;
 import com.campus.secondhand.security.JwtTokenProvider;
@@ -40,6 +41,8 @@ class AdminInitControllerTest {
     private SystemInitService systemInitService;
     @MockBean
     private AdminMapper adminMapper;
+    @MockBean
+    private UserMapper userMapper;
 
     @Test
     void shouldReturnUnauthorizedWhenTokenMissing() throws Exception {
@@ -59,7 +62,7 @@ class AdminInitControllerTest {
                 .accountStatus(AdminAccountStatus.ACTIVE)
                 .build());
 
-        String token = jwtTokenProvider.createToken(2L, "admin1002", "operator");
+        String token = jwtTokenProvider.createAdminToken(2L, "admin1002", "operator", "active");
 
         mockMvc.perform(post("/api/v1/admin/init/bootstrap")
                         .header("Authorization", "Bearer " + token))
@@ -78,7 +81,7 @@ class AdminInitControllerTest {
                 .build());
         when(systemInitService.bootstrap(any())).thenReturn(new BootstrapResponse(1, 2, 4));
 
-        String token = jwtTokenProvider.createToken(1L, "admin1001", "super_admin");
+        String token = jwtTokenProvider.createAdminToken(1L, "admin1001", "super_admin", "active");
 
         mockMvc.perform(post("/api/v1/admin/init/bootstrap")
                         .header("Authorization", "Bearer " + token))
@@ -106,8 +109,8 @@ class AdminInitControllerTest {
         }
 
         @Bean
-        JwtAuthenticationFilter jwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, AdminMapper adminMapper) {
-            return new JwtAuthenticationFilter(jwtTokenProvider, adminMapper);
+        JwtAuthenticationFilter jwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, AdminMapper adminMapper, UserMapper userMapper) {
+            return new JwtAuthenticationFilter(jwtTokenProvider, adminMapper, userMapper);
         }
     }
 }

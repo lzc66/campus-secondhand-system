@@ -53,7 +53,7 @@ class AdminAuthServiceTest {
                 .build();
         when(adminMapper.selectByAdminNo("admin1001")).thenReturn(admin);
         when(passwordEncoder.matches("123456", "hash")).thenReturn(true);
-        when(jwtTokenProvider.createToken(1L, "admin1001", "super_admin")).thenReturn("jwt-token");
+        when(jwtTokenProvider.createAdminToken(1L, "admin1001", "super_admin", "active")).thenReturn("jwt-token");
         when(jwtTokenProvider.getExpirationSeconds()).thenReturn(86400L);
 
         AdminLoginResponse response = adminAuthService.login(new AdminLoginRequest("admin1001", "123456"), "127.0.0.1", "JUnit");

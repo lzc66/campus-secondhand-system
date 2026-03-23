@@ -56,7 +56,12 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         adminMapper.updateById(admin);
         saveLoginLog(admin.getAdminId(), request.adminNo(), "success", null, ipAddress, userAgent);
 
-        String token = jwtTokenProvider.createToken(admin.getAdminId(), admin.getAdminNo(), admin.getRoleCode().getValue());
+        String token = jwtTokenProvider.createAdminToken(
+                admin.getAdminId(),
+                admin.getAdminNo(),
+                admin.getRoleCode().getValue(),
+                admin.getAccountStatus().getValue()
+        );
         return new AdminLoginResponse(
                 token,
                 "Bearer",

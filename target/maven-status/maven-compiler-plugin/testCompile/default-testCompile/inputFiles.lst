@@ -1,4 +1,9 @@
 D:\Users\White\Software Engineering\Software Project\src\test\java\com\campus\secondhand\controller\admin\AdminInitControllerTest.java
 D:\Users\White\Software Engineering\Software Project\src\test\java\com\campus\secondhand\security\JwtTokenProviderTest.java
 D:\Users\White\Software Engineering\Software Project\src\test\java\com\campus\secondhand\service\AdminAuthServiceTest.java
+D:\Users\White\Software Engineering\Software Project\src\test\java\com\campus\secondhand\service\LocalFileStorageServiceTest.java
+D:\Users\White\Software Engineering\Software Project\src\test\java\com\campus\secondhand\service\NotificationServiceTest.java
+D:\Users\White\Software Engineering\Software Project\src\test\java\com\campus\secondhand\service\PublicRegistrationServiceTest.java
+D:\Users\White\Software Engineering\Software Project\src\test\java\com\campus\secondhand\service\RegistrationReviewServiceTest.java
 D:\Users\White\Software Engineering\Software Project\src\test\java\com\campus\secondhand\service\SystemInitServiceTest.java
+D:\Users\White\Software Engineering\Software Project\src\test\java\com\campus\secondhand\service\UserAuthServiceTest.java

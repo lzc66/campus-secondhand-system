@@ -12,10 +12,13 @@ Spring Boot 3.3 + MyBatis-Plus + MySQL + JWT backend for the campus second-hand 
    - `DB_USERNAME`
    - `DB_PASSWORD`
    - `JWT_SECRET`
+   - `STORAGE_ROOT_DIR`
+   - `STORAGE_PUBLIC_BASE_URL`
+   - optional `spring.mail.*` SMTP properties
 3. Start the application:
 
 ```bash
-mvn spring-boot:run
+mvn -gs .mvn-settings.xml spring-boot:run
 ```
 
 ## Default admin
@@ -23,14 +26,20 @@ mvn spring-boot:run
 - adminNo: `admin1001`
 - password: `123456`
 
+## Local storage
+
+- Default upload root: `${user.dir}/storage`
+- Public file base URL: `/uploads`
+- Student card upload path pattern: `student-cards/yyyy/MM/{uuid}.{ext}`
+
 ## Swagger
 
 - UI: `http://localhost:8080/swagger-ui.html`
 - OpenAPI: `http://localhost:8080/v3/api-docs`
 
-## Example
+## Core APIs
 
-### Login
+### Admin login
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/admin/auth/login \
@@ -38,16 +47,52 @@ curl -X POST http://localhost:8080/api/v1/admin/auth/login \
   -d '{"adminNo":"admin1001","password":"123456"}'
 ```
 
-### Bootstrap
+### Init bootstrap
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/admin/init/bootstrap \
-  -H "Authorization: Bearer <TOKEN>"
+  -H "Authorization: Bearer <ADMIN_TOKEN>"
 ```
 
-### Init status
+### Upload student card
 
 ```bash
-curl http://localhost:8080/api/v1/admin/init/status \
-  -H "Authorization: Bearer <TOKEN>"
+curl -X POST http://localhost:8080/api/v1/public/files/student-card \
+  -F "file=@C:/temp/student-card.png"
+```
+
+### Submit registration application
+
+```bash
+curl -X POST http://localhost:8080/api/v1/public/registration-applications \
+  -H "Content-Type: application/json" \
+  -d '{
+    "studentNo":"20240001",
+    "realName":"Alice",
+    "gender":"female",
+    "email":"alice@campus.local",
+    "phone":"13800000000",
+    "password":"123456",
+    "collegeName":"Engineering",
+    "majorName":"Software Engineering",
+    "className":"Class 1",
+    "studentCardFileId":1
+  }'
+```
+
+### Review registration application
+
+```bash
+curl -X POST http://localhost:8080/api/v1/admin/registration-applications/1/approve \
+  -H "Authorization: Bearer <ADMIN_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"reviewRemark":"approved"}'
+```
+
+### User login
+
+```bash
+curl -X POST http://localhost:8080/api/v1/user/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"studentNo":"20240001","password":"123456","captcha":"","captchaKey":""}'
 ```

@@ -40,12 +40,17 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/api/v1/admin/auth/login",
+                                "/api/v1/user/auth/login",
+                                "/api/v1/public/**",
+                                "/uploads/**",
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
                         .requestMatchers("/api/v1/admin/init/**").hasRole("SUPER_ADMIN")
-                        .requestMatchers("/api/v1/admin/auth/me").authenticated()
+                        .requestMatchers("/api/v1/admin/registration-applications/**").hasAnyRole("SUPER_ADMIN", "AUDITOR")
+                        .requestMatchers("/api/v1/admin/auth/me").hasAnyRole("SUPER_ADMIN", "AUDITOR", "OPERATOR")
+                        .requestMatchers("/api/v1/user/auth/me").hasRole("USER")
                         .anyRequest().authenticated())
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> writeError(response, HttpStatus.UNAUTHORIZED, 40100, "Unauthorized"))
