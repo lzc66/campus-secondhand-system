@@ -1,12 +1,16 @@
 package com.campus.secondhand.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.campus.secondhand.entity.Announcement;
 import com.campus.secondhand.entity.Notification;
 import com.campus.secondhand.entity.RegistrationApplication;
 import com.campus.secondhand.entity.User;
 import com.campus.secondhand.enums.NotificationBusinessType;
 import com.campus.secondhand.enums.NotificationChannel;
 import com.campus.secondhand.enums.NotificationSendStatus;
+import com.campus.secondhand.enums.UserAccountStatus;
 import com.campus.secondhand.mapper.NotificationMapper;
+import com.campus.secondhand.mapper.UserMapper;
 import com.campus.secondhand.service.NotificationService;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,18 +19,22 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationMapper notificationMapper;
+    private final UserMapper userMapper;
     private final ObjectProvider<JavaMailSender> mailSenderProvider;
     private final String mailUsername;
 
     public NotificationServiceImpl(NotificationMapper notificationMapper,
+                                   UserMapper userMapper,
                                    ObjectProvider<JavaMailSender> mailSenderProvider,
                                    @Value("${spring.mail.username:}") String mailUsername) {
         this.notificationMapper = notificationMapper;
+        this.userMapper = userMapper;
         this.mailSenderProvider = mailSenderProvider;
         this.mailUsername = mailUsername;
     }
@@ -51,6 +59,7 @@ public class NotificationServiceImpl implements NotificationService {
                 user.getUserId(),
                 user.getEmail(),
                 adminId,
+                NotificationBusinessType.REGISTER_REVIEW,
                 application.getApplicationId(),
                 "Registration approved",
                 "Your registration application has been approved. You can now sign in with your student number and password."
@@ -66,15 +75,39 @@ public class NotificationServiceImpl implements NotificationService {
                 null,
                 application.getEmail(),
                 adminId,
+                NotificationBusinessType.REGISTER_REVIEW,
                 application.getApplicationId(),
                 "Registration rejected",
                 content
         );
     }
 
+    @Override
+    public void sendAnnouncementPublished(Announcement announcement, Long adminId) {
+        List<User> users = userMapper.selectList(new LambdaQueryWrapper<User>()
+                .eq(User::getAccountStatus, UserAccountStatus.ACTIVE)
+                .isNull(User::getDeletedAt));
+        LocalDateTime now = LocalDateTime.now();
+        for (User user : users) {
+            notificationMapper.insert(Notification.builder()
+                    .receiverUserId(user.getUserId())
+                    .receiverEmail(user.getEmail())
+                    .senderAdminId(adminId)
+                    .channel(NotificationChannel.SITE)
+                    .businessType(NotificationBusinessType.ANNOUNCEMENT)
+                    .businessId(announcement.getAnnouncementId())
+                    .title(announcement.getTitle())
+                    .content(announcement.getContent())
+                    .sendStatus(NotificationSendStatus.SENT)
+                    .sentAt(now)
+                    .build());
+        }
+    }
+
     private void createEmailNotification(Long receiverUserId,
                                          String receiverEmail,
                                          Long senderAdminId,
+                                         NotificationBusinessType businessType,
                                          Long businessId,
                                          String title,
                                          String content) {
@@ -83,7 +116,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .receiverEmail(receiverEmail)
                 .senderAdminId(senderAdminId)
                 .channel(NotificationChannel.EMAIL)
-                .businessType(NotificationBusinessType.REGISTER_REVIEW)
+                .businessType(businessType)
                 .businessId(businessId)
                 .title(title)
                 .content(content)

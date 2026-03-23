@@ -7,6 +7,7 @@ import com.campus.secondhand.entity.User;
 import com.campus.secondhand.enums.Gender;
 import com.campus.secondhand.enums.UserAccountStatus;
 import com.campus.secondhand.mapper.LoginLogMapper;
+import com.campus.secondhand.mapper.MediaFileMapper;
 import com.campus.secondhand.mapper.UserMapper;
 import com.campus.secondhand.security.JwtTokenProvider;
 import com.campus.secondhand.service.impl.UserAuthServiceImpl;
@@ -36,6 +37,8 @@ class UserAuthServiceTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private JwtTokenProvider jwtTokenProvider;
+    @Mock
+    private MediaFileMapper mediaFileMapper;
 
     @InjectMocks
     private UserAuthServiceImpl userAuthService;

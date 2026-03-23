@@ -49,8 +49,9 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers("/api/v1/admin/init/**").hasRole("SUPER_ADMIN")
                         .requestMatchers("/api/v1/admin/registration-applications/**").hasAnyRole("SUPER_ADMIN", "AUDITOR")
+                        .requestMatchers("/api/v1/admin/announcements/**").hasAnyRole("SUPER_ADMIN", "AUDITOR", "OPERATOR")
                         .requestMatchers("/api/v1/admin/auth/me").hasAnyRole("SUPER_ADMIN", "AUDITOR", "OPERATOR")
-                        .requestMatchers("/api/v1/user/auth/me").hasRole("USER")
+                        .requestMatchers("/api/v1/user/**").hasRole("USER")
                         .anyRequest().authenticated())
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> writeError(response, HttpStatus.UNAUTHORIZED, 40100, "Unauthorized"))
