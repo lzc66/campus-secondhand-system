@@ -314,3 +314,48 @@ curl -X POST "http://localhost:8080/api/v1/user/recommendations/refresh?limit=12
 curl -X POST http://localhost:8080/api/v1/user/recommendations/1/click \
   -H "Authorization: Bearer <USER_TOKEN>"
 ```
+
+### Admin management
+
+```bash
+curl "http://localhost:8080/api/v1/admin/users?page=1&size=10&accountStatus=active" \
+  -H "Authorization: Bearer <ADMIN_TOKEN>"
+```
+
+```bash
+curl -X POST http://localhost:8080/api/v1/admin/users/1/status \
+  -H "Authorization: Bearer <ADMIN_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"accountStatus":"disabled","actionNote":"manual review"}'
+```
+
+```bash
+curl "http://localhost:8080/api/v1/admin/items?page=1&size=10&status=on_sale&sellerStudentNo=20240002" \
+  -H "Authorization: Bearer <ADMIN_TOKEN>"
+```
+
+```bash
+curl -X POST http://localhost:8080/api/v1/admin/items/101/status \
+  -H "Authorization: Bearer <ADMIN_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"itemStatus":"off_shelf","actionNote":"policy review"}'
+```
+
+```bash
+curl "http://localhost:8080/api/v1/admin/orders?page=1&size=10&orderStatus=pending_confirm" \
+  -H "Authorization: Bearer <ADMIN_TOKEN>"
+```
+
+```bash
+curl -X POST http://localhost:8080/api/v1/admin/orders/1/cancel \
+  -H "Authorization: Bearer <ADMIN_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"actionNote":"risk control"}'
+```
+
+```bash
+curl -X POST http://localhost:8080/api/v1/admin/orders/1/close \
+  -H "Authorization: Bearer <ADMIN_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"actionNote":"archive"}'
+```

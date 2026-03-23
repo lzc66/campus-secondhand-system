@@ -2,6 +2,9 @@ D:\Users\White\Software Engineering\Software Project\src\test\java\com\campus\se
 D:\Users\White\Software Engineering\Software Project\src\test\java\com\campus\secondhand\security\JwtTokenProviderTest.java
 D:\Users\White\Software Engineering\Software Project\src\test\java\com\campus\secondhand\service\AdminAnnouncementServiceTest.java
 D:\Users\White\Software Engineering\Software Project\src\test\java\com\campus\secondhand\service\AdminAuthServiceTest.java
+D:\Users\White\Software Engineering\Software Project\src\test\java\com\campus\secondhand\service\AdminItemManagementServiceTest.java
+D:\Users\White\Software Engineering\Software Project\src\test\java\com\campus\secondhand\service\AdminOrderManagementServiceTest.java
+D:\Users\White\Software Engineering\Software Project\src\test\java\com\campus\secondhand\service\AdminUserManagementServiceTest.java
 D:\Users\White\Software Engineering\Software Project\src\test\java\com\campus\secondhand\service\ItemCommentServiceTest.java
 D:\Users\White\Software Engineering\Software Project\src\test\java\com\campus\secondhand\service\LocalFileStorageServiceTest.java
 D:\Users\White\Software Engineering\Software Project\src\test\java\com\campus\secondhand\service\NotificationServiceTest.java
