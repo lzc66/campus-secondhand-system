@@ -11,6 +11,10 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jackson:
     default-property-inclusion: non_null
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 
 mybatis-plus:
   configuration:
@@ -29,3 +33,6 @@ app:
   jwt:
     secret: ${JWT_SECRET:CampusSecondhandJwtSecretKeyForAdminInit1234567890}
     expiration-seconds: ${JWT_EXPIRATION_SECONDS:86400}
+  storage:
+    root-dir: ${STORAGE_ROOT_DIR:${user.dir}/storage}
+    public-base-url: ${STORAGE_PUBLIC_BASE_URL:/uploads}
