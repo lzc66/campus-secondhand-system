@@ -5,6 +5,7 @@ import com.campus.secondhand.config.StorageProperties;
 import com.campus.secondhand.entity.MediaFile;
 import com.campus.secondhand.mapper.MediaFileMapper;
 import com.campus.secondhand.service.FileStorageService;
+import com.campus.secondhand.vo.common.MediaFileResponse;
 import com.campus.secondhand.vo.publicapi.StudentCardUploadResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -37,11 +38,41 @@ public class LocalFileStorageService implements FileStorageService {
 
     @Override
     public StudentCardUploadResponse storeStudentCard(MultipartFile file) {
+        MediaFile mediaFile = storeImage(file, "student-cards", "guest", null);
+        return new StudentCardUploadResponse(
+                mediaFile.getFileId(),
+                mediaFile.getFileUrl(),
+                mediaFile.getOriginalName(),
+                mediaFile.getFileSize()
+        );
+    }
+
+    @Override
+    public MediaFileResponse storeUserAvatar(Long userId, MultipartFile file) {
+        return toResponse(storeImage(file, "avatars", "user", userId));
+    }
+
+    @Override
+    public MediaFileResponse storeItemImage(Long userId, MultipartFile file) {
+        return toResponse(storeImage(file, "item-images", "user", userId));
+    }
+
+    @Override
+    public MediaFile getRequiredFile(Long fileId) {
+        MediaFile mediaFile = mediaFileMapper.selectById(fileId);
+        if (mediaFile == null) {
+            throw new BusinessException(40410, HttpStatus.NOT_FOUND, "Uploaded file not found");
+        }
+        return mediaFile;
+    }
+
+    private MediaFile storeImage(MultipartFile file, String folder, String uploaderRole, Long uploaderRefId) {
         validateImage(file);
         String extension = resolveExtension(file);
         LocalDate today = LocalDate.now();
         String fileKey = String.format(
-                "student-cards/%d/%02d/%s.%s",
+                "%s/%d/%02d/%s.%s",
+                folder,
                 today.getYear(),
                 today.getMonthValue(),
                 UUID.randomUUID(),
@@ -67,25 +98,22 @@ public class LocalFileStorageService implements FileStorageService {
                 .fileSize(file.getSize())
                 .fileExt(extension)
                 .fileCategory("image")
-                .uploaderRole("guest")
+                .uploaderRole(uploaderRole)
+                .uploaderRefId(uploaderRefId)
                 .checksumSha256(calculateSha256(target))
                 .build();
         mediaFileMapper.insert(mediaFile);
-        return new StudentCardUploadResponse(
+        return mediaFile;
+    }
+
+    private MediaFileResponse toResponse(MediaFile mediaFile) {
+        return new MediaFileResponse(
                 mediaFile.getFileId(),
                 mediaFile.getFileUrl(),
                 mediaFile.getOriginalName(),
-                mediaFile.getFileSize()
+                mediaFile.getFileSize(),
+                mediaFile.getMimeType()
         );
-    }
-
-    @Override
-    public MediaFile getRequiredFile(Long fileId) {
-        MediaFile mediaFile = mediaFileMapper.selectById(fileId);
-        if (mediaFile == null) {
-            throw new BusinessException(40410, HttpStatus.NOT_FOUND, "Uploaded file not found");
-        }
-        return mediaFile;
     }
 
     private void validateImage(MultipartFile file) {

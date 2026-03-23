@@ -3,9 +3,11 @@ package com.campus.secondhand.service.impl;
 import com.campus.secondhand.common.exception.BusinessException;
 import com.campus.secondhand.dto.user.UserLoginRequest;
 import com.campus.secondhand.entity.LoginLog;
+import com.campus.secondhand.entity.MediaFile;
 import com.campus.secondhand.entity.User;
 import com.campus.secondhand.enums.UserAccountStatus;
 import com.campus.secondhand.mapper.LoginLogMapper;
+import com.campus.secondhand.mapper.MediaFileMapper;
 import com.campus.secondhand.mapper.UserMapper;
 import com.campus.secondhand.security.JwtTokenProvider;
 import com.campus.secondhand.security.UserPrincipal;
@@ -25,15 +27,18 @@ public class UserAuthServiceImpl implements UserAuthService {
     private final LoginLogMapper loginLogMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final MediaFileMapper mediaFileMapper;
 
     public UserAuthServiceImpl(UserMapper userMapper,
                                LoginLogMapper loginLogMapper,
                                PasswordEncoder passwordEncoder,
-                               JwtTokenProvider jwtTokenProvider) {
+                               JwtTokenProvider jwtTokenProvider,
+                               MediaFileMapper mediaFileMapper) {
         this.userMapper = userMapper;
         this.loginLogMapper = loginLogMapper;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.mediaFileMapper = mediaFileMapper;
     }
 
     @Override
@@ -94,12 +99,17 @@ public class UserAuthServiceImpl implements UserAuthService {
     }
 
     private UserProfileResponse toProfile(User user) {
+        MediaFile avatar = user.getAvatarFileId() == null ? null : mediaFileMapper.selectById(user.getAvatarFileId());
         return new UserProfileResponse(
                 user.getUserId(),
                 user.getStudentNo(),
                 user.getRealName(),
                 user.getEmail(),
                 user.getPhone(),
+                user.getQqNo(),
+                user.getWechatNo(),
+                user.getAvatarFileId(),
+                avatar == null ? null : avatar.getFileUrl(),
                 user.getCollegeName(),
                 user.getMajorName(),
                 user.getClassName(),
