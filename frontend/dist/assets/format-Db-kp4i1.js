@@ -1,1 +1,0 @@
-import{i as e,u as t}from"./es-tSGp_W4p.js";var n=t(e(),1);function r(e,t=`--`){return e?(0,n.default)(e).format(`YYYY-MM-DD HH:mm`):t}function i(e,t=`--`){return e?(0,n.default)(e).format(`YYYY-MM-DD`):t}function a(e,t=`--`){return e==null||e===``?t:`¥${Number(e).toFixed(2)}`}export{r as n,a as r,i as t};
