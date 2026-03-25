@@ -440,3 +440,35 @@ curl -OJ "http://localhost:8080/api/v1/admin/reports/hot-search-keywords.csv?sta
 curl -OJ "http://localhost:8080/api/v1/admin/reports/user-growth-trends.csv?startDate=2026-03-01&endDate=2026-03-25" \
   -H "Authorization: Bearer <ADMIN_TOKEN>"
 ```
+## Frontend
+
+前端工程位于 `frontend/`，采用 `Vue 3 + Vite + TypeScript + Pinia + Vue Router + Axios + Element Plus + ECharts`。
+
+### Run frontend
+
+```bash
+cd frontend
+npm install --registry=https://registry.npmmirror.com
+npm run dev
+```
+
+默认开发地址：`http://localhost:5173`
+
+Vite 已代理以下路径到后端 `http://localhost:8080`：
+- `/api`
+- `/uploads`
+
+### Build frontend
+
+```bash
+cd frontend
+npm run build
+```
+
+构建产物输出到 `frontend/dist/`。
+
+### Frontend route groups
+
+- Public: `/` `/items` `/items/:id` `/wanted-posts` `/wanted-posts/:id` `/announcements` `/register`
+- User: `/login` `/user/profile` `/user/my-items` `/user/publish` `/user/orders` `/user/wanted-posts` `/user/notifications` `/user/recommendations` `/user/comments`
+- Admin: `/admin/login` `/admin/dashboard` `/admin/registrations` `/admin/users` `/admin/items` `/admin/orders` `/admin/announcements` `/admin/reports`
