@@ -18,7 +18,7 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("Campus Second-hand Backend API")
                         .version("v1")
-                        .description("Admin auth, registration review, user profile, item publishing, public browse, item comment, wanted post, order, announcement, notification, recommendation, and admin management APIs"))
+                        .description("Admin auth, registration review, user profile, item publishing, public browse, item comment, wanted post, order, announcement, notification, recommendation, and admin management, dashboard, analytics, and report export APIs"))
                 .addSecurityItem(new SecurityRequirement().addList(schemeName))
                 .components(new Components().addSecuritySchemes(schemeName,
                         new SecurityScheme()

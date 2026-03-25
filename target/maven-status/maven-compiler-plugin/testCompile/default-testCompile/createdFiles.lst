@@ -1,3 +1,4 @@
+com\campus\secondhand\service\AdminReportExportServiceTest.class
 com\campus\secondhand\service\UserProfileServiceTest.class
 com\campus\secondhand\service\UserWantedPostServiceTest.class
 com\campus\secondhand\security\JwtTokenProviderTest.class
@@ -7,6 +8,7 @@ com\campus\secondhand\service\NotificationServiceTest.class
 com\campus\secondhand\service\SystemInitServiceTest.class
 com\campus\secondhand\service\AdminAuthServiceTest.class
 com\campus\secondhand\service\UserAuthServiceTest.class
+com\campus\secondhand\service\AdminDashboardServiceTest.class
 com\campus\secondhand\service\ItemCommentServiceTest.class
 com\campus\secondhand\controller\admin\AdminInitControllerTest$TestConfig.class
 com\campus\secondhand\service\AdminAnnouncementServiceTest.class

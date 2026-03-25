@@ -3,6 +3,7 @@ com\campus\secondhand\service\impl\PublicRegistrationServiceImpl.class
 com\campus\secondhand\entity\SearchHistory.class
 com\campus\secondhand\entity\OrderItem.class
 com\campus\secondhand\mapper\UserMapper.class
+com\campus\secondhand\vo\admin\AdminDashboardTrendPointResponse.class
 com\campus\secondhand\controller\user\UserRecommendationController.class
 com\campus\secondhand\service\impl\SystemInitServiceImpl.class
 com\campus\secondhand\vo\admin\AdminOrderPageResponse.class
@@ -13,8 +14,10 @@ com\campus\secondhand\vo\user\UserWantedPostDetailResponse.class
 com\campus\secondhand\vo\publicapi\PublicItemDetailResponse.class
 com\campus\secondhand\vo\publicapi\PublicItemCommentReplyResponse.class
 com\campus\secondhand\vo\admin\ReviewRegistrationResponse.class
+com\campus\secondhand\service\impl\AdminDashboardServiceImpl$DateRange.class
 com\campus\secondhand\security\AdminPrincipal.class
 com\campus\secondhand\vo\user\UserNotificationPageResponse.class
+com\campus\secondhand\vo\admin\AdminDashboardHotKeywordResponse.class
 com\campus\secondhand\vo\publicapi\PublicAnnouncementPageResponse.class
 com\campus\secondhand\controller\admin\AdminAuthController.class
 com\campus\secondhand\controller\admin\AdminInitController.class
@@ -96,10 +99,12 @@ com\campus\secondhand\controller\user\UserItemCommentController.class
 com\campus\secondhand\enums\ItemStatus.class
 com\campus\secondhand\vo\user\UserReceivedCommentPageResponse.class
 com\campus\secondhand\mapper\SearchHistoryMapper.class
+com\campus\secondhand\service\impl\AdminDashboardServiceImpl$HotKeywordAccumulator.class
 com\campus\secondhand\mapper\TradeOrderMapper.class
 com\campus\secondhand\enums\AdminAccountStatus.class
 com\campus\secondhand\vo\user\UserRecommendationResponse.class
 com\campus\secondhand\vo\user\UserOrderPageResponse.class
+com\campus\secondhand\service\impl\AdminDashboardServiceImpl$TrendAccumulator.class
 com\campus\secondhand\controller\publicapi\PublicAnnouncementController.class
 com\campus\secondhand\mapper\OrderStatusLogMapper.class
 com\campus\secondhand\service\impl\AdminOrderManagementServiceImpl.class
@@ -107,6 +112,9 @@ com\campus\secondhand\entity\UserBehaviorLog$UserBehaviorLogBuilder.class
 com\campus\secondhand\entity\UserRecommendation.class
 com\campus\secondhand\dto\user\SaveWantedPostRequest.class
 com\campus\secondhand\vo\admin\AdminUserDetailResponse.class
+com\campus\secondhand\vo\admin\AdminDashboardItemStatusResponse.class
+com\campus\secondhand\service\AdminReportExportService.class
+com\campus\secondhand\vo\admin\AdminReportFileResponse.class
 com\campus\secondhand\entity\Item.class
 com\campus\secondhand\vo\admin\RegistrationApplicationSummaryResponse.class
 com\campus\secondhand\service\UserItemService.class
@@ -142,6 +150,7 @@ com\campus\secondhand\mapper\MediaFileMapper.class
 com\campus\secondhand\common\api\ApiResponse.class
 com\campus\secondhand\entity\AdminOperationLog.class
 com\campus\secondhand\entity\MediaFile$MediaFileBuilder.class
+com\campus\secondhand\vo\admin\AdminDashboardUserGrowthResponse.class
 com\campus\secondhand\entity\ItemCategory$ItemCategoryBuilder.class
 com\campus\secondhand\enums\NotificationBusinessType.class
 com\campus\secondhand\vo\admin\AdminOrderDetailResponse.class
@@ -149,8 +158,10 @@ com\campus\secondhand\service\UserProfileService.class
 com\campus\secondhand\security\UserPrincipal.class
 com\campus\secondhand\service\AdminAnnouncementService.class
 com\campus\secondhand\dto\admin\AnnouncementActionRequest.class
+com\campus\secondhand\service\impl\AdminDashboardServiceImpl$CategorySalesAccumulator.class
 com\campus\secondhand\enums\ItemConditionLevel.class
 com\campus\secondhand\vo\publicapi\ItemCategoryResponse.class
+com\campus\secondhand\vo\admin\AdminDashboardRecentActivityResponse.class
 com\campus\secondhand\service\impl\PublicAnnouncementServiceImpl.class
 com\campus\secondhand\vo\user\UserProfileResponse.class
 com\campus\secondhand\dto\admin\AdminOrderActionRequest.class
@@ -171,6 +182,8 @@ com\campus\secondhand\service\impl\ItemCommentServiceImpl.class
 com\campus\secondhand\entity\SearchHistory$SearchHistoryBuilder.class
 com\campus\secondhand\vo\admin\AdminOrderSummaryResponse.class
 com\campus\secondhand\mapper\LoginLogMapper.class
+com\campus\secondhand\vo\admin\AdminDashboardCategorySalesResponse.class
+com\campus\secondhand\service\impl\AdminDashboardServiceImpl.class
 com\campus\secondhand\vo\admin\AdminItemDetailResponse.class
 com\campus\secondhand\controller\admin\AdminItemManagementController.class
 com\campus\secondhand\dto\user\CancelOrderRequest.class
@@ -196,7 +209,9 @@ com\campus\secondhand\vo\publicapi\RegistrationApplicationSubmitResponse.class
 com\campus\secondhand\service\ItemCategoryService.class
 com\campus\secondhand\enums\PaymentMethod.class
 com\campus\secondhand\vo\admin\AdminAnnouncementDetailResponse.class
+com\campus\secondhand\vo\admin\AdminDashboardOverviewResponse.class
 com\campus\secondhand\vo\admin\AdminItemSellerResponse.class
+com\campus\secondhand\service\impl\AdminReportExportServiceImpl.class
 com\campus\secondhand\service\AdminItemManagementService.class
 com\campus\secondhand\entity\Announcement$AnnouncementBuilder.class
 com\campus\secondhand\vo\publicapi\PublicItemPageResponse.class
@@ -220,12 +235,14 @@ com\campus\secondhand\entity\RegistrationApplication$RegistrationApplicationBuil
 com\campus\secondhand\service\impl\PublicWantedPostServiceImpl.class
 com\campus\secondhand\vo\user\UserLoginResponse.class
 com\campus\secondhand\vo\user\UserOrderDetailResponse.class
+com\campus\secondhand\service\AdminDashboardService.class
 com\campus\secondhand\vo\publicapi\PublicItemCommentResponse.class
 com\campus\secondhand\mapper\UserBehaviorLogMapper.class
 com\campus\secondhand\entity\UserBehaviorLog.class
 com\campus\secondhand\service\SystemInitService.class
 com\campus\secondhand\mapper\AdminMapper.class
 com\campus\secondhand\vo\publicapi\CommentAuthorResponse.class
+com\campus\secondhand\controller\admin\AdminDashboardController.class
 com\campus\secondhand\vo\publicapi\PublicWantedPostPageResponse.class
 com\campus\secondhand\vo\user\UserReceivedCommentResponse.class
 com\campus\secondhand\vo\admin\AdminUserSummaryResponse.class
@@ -236,6 +253,7 @@ com\campus\secondhand\entity\Admin$AdminBuilder.class
 com\campus\secondhand\enums\RecommendationReasonCode.class
 com\campus\secondhand\vo\publicapi\PublicSellerResponse.class
 com\campus\secondhand\service\AdminUserManagementService.class
+com\campus\secondhand\controller\admin\AdminReportExportController.class
 com\campus\secondhand\dto\admin\UpdateUserStatusRequest.class
 com\campus\secondhand\service\impl\RecommendationBehaviorServiceImpl.class
 com\campus\secondhand\enums\OrderOperatorType.class
