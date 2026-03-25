@@ -359,3 +359,84 @@ curl -X POST http://localhost:8080/api/v1/admin/orders/1/close \
   -H "Content-Type: application/json" \
   -d '{"actionNote":"archive"}'
 ```
+
+### Admin dashboard
+
+```bash
+curl "http://localhost:8080/api/v1/admin/dashboard/overview" \
+  -H "Authorization: Bearer <ADMIN_TOKEN>"
+```
+
+```bash
+curl "http://localhost:8080/api/v1/admin/dashboard/order-trends?days=7" \
+  -H "Authorization: Bearer <ADMIN_TOKEN>"
+```
+
+```bash
+curl "http://localhost:8080/api/v1/admin/dashboard/item-status" \
+  -H "Authorization: Bearer <ADMIN_TOKEN>"
+```
+
+```bash
+curl "http://localhost:8080/api/v1/admin/dashboard/recent-activities?limit=10" \
+  -H "Authorization: Bearer <ADMIN_TOKEN>"
+```
+```bash
+curl "http://localhost:8080/api/v1/admin/dashboard/category-sales-ranking?days=30&limit=10" \
+  -H "Authorization: Bearer <ADMIN_TOKEN>"
+```
+
+```bash
+curl "http://localhost:8080/api/v1/admin/dashboard/hot-search-keywords?days=7&limit=10" \
+  -H "Authorization: Bearer <ADMIN_TOKEN>"
+```
+
+```bash
+curl "http://localhost:8080/api/v1/admin/dashboard/user-growth-trends?days=7" \
+  -H "Authorization: Bearer <ADMIN_TOKEN>"
+```
+### Admin report exports
+
+```bash
+curl -OJ "http://localhost:8080/api/v1/admin/reports/dashboard-overview.csv" \
+  -H "Authorization: Bearer <ADMIN_TOKEN>"
+```
+
+```bash
+curl -OJ "http://localhost:8080/api/v1/admin/reports/order-trends.csv?days=7" \
+  -H "Authorization: Bearer <ADMIN_TOKEN>"
+```
+
+```bash
+curl -OJ "http://localhost:8080/api/v1/admin/reports/category-sales-ranking.csv?days=30&limit=20" \
+  -H "Authorization: Bearer <ADMIN_TOKEN>"
+```
+
+```bash
+curl -OJ "http://localhost:8080/api/v1/admin/reports/hot-search-keywords.csv?days=7&limit=20" \
+  -H "Authorization: Bearer <ADMIN_TOKEN>"
+```
+
+```bash
+curl -OJ "http://localhost:8080/api/v1/admin/reports/user-growth-trends.csv?days=30" \
+  -H "Authorization: Bearer <ADMIN_TOKEN>"
+```
+```bash
+curl -OJ "http://localhost:8080/api/v1/admin/reports/order-trends.csv?startDate=2026-03-01&endDate=2026-03-25" \
+  -H "Authorization: Bearer <ADMIN_TOKEN>"
+```
+
+```bash
+curl -OJ "http://localhost:8080/api/v1/admin/reports/category-sales-ranking.csv?startDate=2026-03-01&endDate=2026-03-25&limit=20" \
+  -H "Authorization: Bearer <ADMIN_TOKEN>"
+```
+
+```bash
+curl -OJ "http://localhost:8080/api/v1/admin/reports/hot-search-keywords.csv?startDate=2026-03-01&endDate=2026-03-25&limit=20" \
+  -H "Authorization: Bearer <ADMIN_TOKEN>"
+```
+
+```bash
+curl -OJ "http://localhost:8080/api/v1/admin/reports/user-growth-trends.csv?startDate=2026-03-01&endDate=2026-03-25" \
+  -H "Authorization: Bearer <ADMIN_TOKEN>"
+```
