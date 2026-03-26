@@ -93,17 +93,49 @@ public class UserNotificationCenterServiceImpl implements UserNotificationCenter
     }
 
     private UserNotificationResponse toResponse(Notification notification) {
+        String localizedTitle = localizeTitle(notification.getTitle());
+        String localizedContent = localizeContent(notification.getContent());
         return new UserNotificationResponse(
                 notification.getNotificationId(),
                 notification.getBusinessType().getValue(),
                 notification.getBusinessId(),
-                notification.getTitle(),
-                notification.getContent(),
+                localizedTitle,
+                localizedContent,
                 notification.getSendStatus().getValue(),
                 notification.getSentAt(),
                 notification.getReadAt(),
                 notification.getCreatedAt(),
                 notification.getReadAt() != null
         );
+    }
+
+    private String localizeTitle(String title) {
+        if (!StringUtils.hasText(title)) {
+            return title;
+        }
+        return switch (title.trim()) {
+            case "Registration approved" -> "注册审核已通过";
+            case "Registration rejected" -> "注册审核未通过";
+            default -> title;
+        };
+    }
+
+    private String localizeContent(String content) {
+        if (!StringUtils.hasText(content)) {
+            return content;
+        }
+        String trimmed = content.trim();
+        if ("Your registration application has been approved. You can now sign in with your student number.".equals(trimmed)
+                || "Your registration application has been approved. You can now sign in with your student number and password.".equals(trimmed)) {
+            return "你的注册申请已通过审核，现在可以使用学号和密码登录系统。";
+        }
+        if ("Your registration application has been rejected. You can submit a new application later.".equals(trimmed)) {
+            return "你的注册申请未通过审核，可在完善资料后重新提交。";
+        }
+        String prefix = "Your registration application has been rejected. Remark: ";
+        if (trimmed.startsWith(prefix)) {
+            return "你的注册申请未通过审核。审核备注：" + trimmed.substring(prefix.length());
+        }
+        return content;
     }
 }

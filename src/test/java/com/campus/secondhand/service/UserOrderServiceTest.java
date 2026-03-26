@@ -1,5 +1,6 @@
 package com.campus.secondhand.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.campus.secondhand.common.exception.BusinessException;
 import com.campus.secondhand.dto.user.CancelOrderRequest;
 import com.campus.secondhand.dto.user.CreateOrderRequest;
@@ -57,6 +58,25 @@ class UserOrderServiceTest {
 
     @InjectMocks
     private UserOrderServiceImpl userOrderService;
+
+
+    @Test
+    void shouldReturnEmptyOrderPageWithoutQueryingUsersWhenNoOrdersFound() {
+        Page<TradeOrder> emptyPage = new Page<>(1, 10, 0);
+        emptyPage.setRecords(List.of());
+        when(tradeOrderMapper.selectPage(any(), any())).thenReturn(emptyPage);
+
+        var response = userOrderService.listOrders(
+                new UserPrincipal(11L, "20240001", "Alice", "alice@campus.local", UserAccountStatus.ACTIVE),
+                "buyer",
+                null,
+                1,
+                10
+        );
+
+        assertEquals(0, response.total());
+        assertEquals(0, response.records().size());
+    }
 
     @Test
     void shouldCreateOrderAndReserveStock() {

@@ -3,16 +3,16 @@
     <div class="thumb">
       <img v-if="item.coverImageUrl" :src="item.coverImageUrl" :alt="item.title" />
       <div v-else class="placeholder">{{ item.title.slice(0, 2) }}</div>
-      <span class="badge">{{ item.categoryName || 'Category' }}</span>
-      <span v-if="showDemoFlag" class="demo-flag">Demo Item</span>
+      <span class="badge">{{ item.categoryName || '未分类' }}</span>
+      <span v-if="showDemoFlag" class="demo-flag">演示数据</span>
     </div>
     <div class="body">
       <div class="topline">
         <h3>{{ item.title }}</h3>
         <span>{{ conditionLabel }}</span>
       </div>
-      <p>{{ item.brand || 'Campus Pick' }}<template v-if="item.model"> / {{ item.model }}</template></p>
-      <div v-if="showDemoFlag" class="demo-note">Sample data for presentation. Useful for showing item cards, recommendation lists, and order entry.</div>
+      <p>{{ item.brand || '校园精选' }}<template v-if="item.model"> / {{ item.model }}</template></p>
+      <div v-if="showDemoFlag" class="demo-note">这是一条演示商品，适合在答辩时展示商品卡片、推荐列表和下单入口。</div>
       <div class="meta">
         <strong>{{ formatPrice(item.price) }}</strong>
         <span>{{ tradeModeLabel }}</span>
@@ -25,7 +25,8 @@
 import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
 import type { ItemSummary } from '@/types/api';
-import { formatPrice, labelize } from '@/utils/format';
+import { formatPrice } from '@/utils/format';
+import { getItemConditionLabel } from '@/utils/status';
 
 const props = withDefaults(defineProps<{
   item: ItemSummary;
@@ -34,9 +35,16 @@ const props = withDefaults(defineProps<{
   demoNotesEnabled: false
 });
 
-const showDemoFlag = computed(() => props.demoNotesEnabled && /^\[(演示|Demo)\]/.test(props.item.title || ''));
-const conditionLabel = computed(() => labelize(props.item.conditionLevel, 'On Sale'));
-const tradeModeLabel = computed(() => labelize(props.item.tradeMode, 'Both'));
+const showDemoFlag = computed(() => props.demoNotesEnabled && /^\[(婕旂ず|Demo)\]/.test(props.item.title || ''));
+const conditionLabel = computed(() => getItemConditionLabel(props.item.conditionLevel));
+const tradeModeLabel = computed(() => {
+  const map: Record<string, string> = {
+    both: '线上 + 线下',
+    online: '仅线上',
+    offline: '仅线下'
+  };
+  return map[String(props.item.tradeMode || '')] || '交易方式待确认';
+});
 </script>
 
 <style scoped>
