@@ -11,7 +11,9 @@ import com.campus.secondhand.mapper.MediaFileMapper;
 import com.campus.secondhand.mapper.UserMapper;
 import com.campus.secondhand.security.JwtTokenProvider;
 import com.campus.secondhand.security.UserPrincipal;
+import com.campus.secondhand.service.LoginCaptchaService;
 import com.campus.secondhand.service.UserAuthService;
+import com.campus.secondhand.vo.user.UserCaptchaResponse;
 import com.campus.secondhand.vo.user.UserLoginResponse;
 import com.campus.secondhand.vo.user.UserProfileResponse;
 import org.springframework.http.HttpStatus;
@@ -28,38 +30,51 @@ public class UserAuthServiceImpl implements UserAuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final MediaFileMapper mediaFileMapper;
+    private final LoginCaptchaService loginCaptchaService;
 
     public UserAuthServiceImpl(UserMapper userMapper,
                                LoginLogMapper loginLogMapper,
                                PasswordEncoder passwordEncoder,
                                JwtTokenProvider jwtTokenProvider,
-                               MediaFileMapper mediaFileMapper) {
+                               MediaFileMapper mediaFileMapper,
+                               LoginCaptchaService loginCaptchaService) {
         this.userMapper = userMapper;
         this.loginLogMapper = loginLogMapper;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.mediaFileMapper = mediaFileMapper;
+        this.loginCaptchaService = loginCaptchaService;
+    }
+
+    @Override
+    public UserCaptchaResponse getLoginCaptcha() {
+        return loginCaptchaService.generateUserLoginCaptcha();
     }
 
     @Override
     public UserLoginResponse login(UserLoginRequest request, String ipAddress, String userAgent) {
+        if (!loginCaptchaService.verifyUserLoginCaptcha(request.captchaKey(), request.captcha())) {
+            saveLoginLog(null, request.studentNo(), "failure", "CAPTCHA_INVALID", 0, ipAddress, userAgent);
+            throw new BusinessException(40122, HttpStatus.UNAUTHORIZED, "Captcha is invalid or expired");
+        }
+
         User user = userMapper.selectByStudentNo(request.studentNo());
         if (user == null) {
-            saveLoginLog(null, request.studentNo(), "failure", "USER_NOT_FOUND", ipAddress, userAgent);
+            saveLoginLog(null, request.studentNo(), "failure", "USER_NOT_FOUND", 1, ipAddress, userAgent);
             throw new BusinessException(40120, HttpStatus.UNAUTHORIZED, "Student number or password is incorrect");
         }
         if (user.getAccountStatus() != UserAccountStatus.ACTIVE) {
-            saveLoginLog(user.getUserId(), request.studentNo(), "failure", "USER_NOT_ACTIVE", ipAddress, userAgent);
+            saveLoginLog(user.getUserId(), request.studentNo(), "failure", "USER_NOT_ACTIVE", 1, ipAddress, userAgent);
             throw new BusinessException(40320, HttpStatus.FORBIDDEN, "User account is unavailable");
         }
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
-            saveLoginLog(user.getUserId(), request.studentNo(), "failure", "PASSWORD_NOT_MATCH", ipAddress, userAgent);
+            saveLoginLog(user.getUserId(), request.studentNo(), "failure", "PASSWORD_NOT_MATCH", 1, ipAddress, userAgent);
             throw new BusinessException(40121, HttpStatus.UNAUTHORIZED, "Student number or password is incorrect");
         }
 
         user.setLastLoginAt(LocalDateTime.now());
         userMapper.updateById(user);
-        saveLoginLog(user.getUserId(), request.studentNo(), "success", null, ipAddress, userAgent);
+        saveLoginLog(user.getUserId(), request.studentNo(), "success", null, 1, ipAddress, userAgent);
 
         String token = jwtTokenProvider.createUserToken(
                 user.getUserId(),
@@ -83,7 +98,7 @@ public class UserAuthServiceImpl implements UserAuthService {
         return toProfile(user);
     }
 
-    private void saveLoginLog(Long accountId, String loginName, String loginResult, String failReason,
+    private void saveLoginLog(Long accountId, String loginName, String loginResult, String failReason, int captchaPassed,
                               String ipAddress, String userAgent) {
         LoginLog loginLog = LoginLog.builder()
                 .accountType("user")
@@ -91,7 +106,7 @@ public class UserAuthServiceImpl implements UserAuthService {
                 .loginName(loginName)
                 .loginResult(loginResult)
                 .failReason(failReason)
-                .captchaPassed(1)
+                .captchaPassed(captchaPassed)
                 .ipAddress(ipAddress)
                 .userAgent(userAgent)
                 .build();

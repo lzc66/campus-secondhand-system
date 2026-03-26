@@ -36,6 +36,8 @@ class AdminAuthServiceTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private JwtTokenProvider jwtTokenProvider;
+    @Mock
+    private LoginCaptchaService loginCaptchaService;
 
     @InjectMocks
     private AdminAuthServiceImpl adminAuthService;
@@ -52,11 +54,12 @@ class AdminAuthServiceTest {
                 .accountStatus(AdminAccountStatus.ACTIVE)
                 .build();
         when(adminMapper.selectByAdminNo("admin1001")).thenReturn(admin);
+        when(loginCaptchaService.verifyAdminLoginCaptcha("key", "ABCD")).thenReturn(true);
         when(passwordEncoder.matches("123456", "hash")).thenReturn(true);
         when(jwtTokenProvider.createAdminToken(1L, "admin1001", "super_admin", "active")).thenReturn("jwt-token");
         when(jwtTokenProvider.getExpirationSeconds()).thenReturn(86400L);
 
-        AdminLoginResponse response = adminAuthService.login(new AdminLoginRequest("admin1001", "123456"), "127.0.0.1", "JUnit");
+        AdminLoginResponse response = adminAuthService.login(new AdminLoginRequest("admin1001", "123456", "ABCD", "key"), "127.0.0.1", "JUnit");
 
         assertEquals("jwt-token", response.token());
         assertEquals("admin1001", response.adminProfile().adminNo());
@@ -74,10 +77,11 @@ class AdminAuthServiceTest {
                 .accountStatus(AdminAccountStatus.ACTIVE)
                 .build();
         when(adminMapper.selectByAdminNo("admin1001")).thenReturn(admin);
+        when(loginCaptchaService.verifyAdminLoginCaptcha("key", "ABCD")).thenReturn(true);
         when(passwordEncoder.matches("bad", "hash")).thenReturn(false);
 
         assertThrows(BusinessException.class,
-                () -> adminAuthService.login(new AdminLoginRequest("admin1001", "bad"), "127.0.0.1", "JUnit"));
+                () -> adminAuthService.login(new AdminLoginRequest("admin1001", "bad", "ABCD", "key"), "127.0.0.1", "JUnit"));
 
         verify(adminMapper, never()).updateById(any(Admin.class));
         verify(loginLogMapper).insert(any(LoginLog.class));
@@ -93,11 +97,23 @@ class AdminAuthServiceTest {
                 .accountStatus(AdminAccountStatus.DISABLED)
                 .build();
         when(adminMapper.selectByAdminNo("admin1001")).thenReturn(admin);
+        when(loginCaptchaService.verifyAdminLoginCaptcha("key", "ABCD")).thenReturn(true);
 
         assertThrows(BusinessException.class,
-                () -> adminAuthService.login(new AdminLoginRequest("admin1001", "123456"), "127.0.0.1", "JUnit"));
+                () -> adminAuthService.login(new AdminLoginRequest("admin1001", "123456", "ABCD", "key"), "127.0.0.1", "JUnit"));
 
         verify(loginLogMapper).insert(any(LoginLog.class));
         verify(adminMapper, never()).updateById(any(Admin.class));
+    }
+
+    @Test
+    void shouldFailWhenCaptchaInvalid() {
+        when(loginCaptchaService.verifyAdminLoginCaptcha("key", "BAD1")).thenReturn(false);
+
+        assertThrows(BusinessException.class,
+                () -> adminAuthService.login(new AdminLoginRequest("admin1001", "123456", "BAD1", "key"), "127.0.0.1", "JUnit"));
+
+        verify(loginLogMapper).insert(any(LoginLog.class));
+        verify(adminMapper, never()).selectByAdminNo(any());
     }
 }

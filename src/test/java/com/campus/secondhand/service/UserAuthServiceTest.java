@@ -39,6 +39,8 @@ class UserAuthServiceTest {
     private JwtTokenProvider jwtTokenProvider;
     @Mock
     private MediaFileMapper mediaFileMapper;
+    @Mock
+    private LoginCaptchaService loginCaptchaService;
 
     @InjectMocks
     private UserAuthServiceImpl userAuthService;
@@ -56,11 +58,12 @@ class UserAuthServiceTest {
                 .accountStatus(UserAccountStatus.ACTIVE)
                 .build();
         when(userMapper.selectByStudentNo("20240001")).thenReturn(user);
+        when(loginCaptchaService.verifyUserLoginCaptcha("key", "ABCD")).thenReturn(true);
         when(passwordEncoder.matches("123456", "hash")).thenReturn(true);
         when(jwtTokenProvider.createUserToken(11L, "20240001", "active")).thenReturn("user-token");
         when(jwtTokenProvider.getExpirationSeconds()).thenReturn(86400L);
 
-        UserLoginResponse response = userAuthService.login(new UserLoginRequest("20240001", "123456", null, null), "127.0.0.1", "JUnit");
+        UserLoginResponse response = userAuthService.login(new UserLoginRequest("20240001", "123456", "ABCD", "key"), "127.0.0.1", "JUnit");
 
         assertEquals("user-token", response.token());
         verify(userMapper).updateById(any(User.class));
@@ -76,11 +79,23 @@ class UserAuthServiceTest {
                 .accountStatus(UserAccountStatus.DISABLED)
                 .build();
         when(userMapper.selectByStudentNo("20240001")).thenReturn(user);
+        when(loginCaptchaService.verifyUserLoginCaptcha("key", "ABCD")).thenReturn(true);
 
         assertThrows(BusinessException.class,
-                () -> userAuthService.login(new UserLoginRequest("20240001", "123456", null, null), "127.0.0.1", "JUnit"));
+                () -> userAuthService.login(new UserLoginRequest("20240001", "123456", "ABCD", "key"), "127.0.0.1", "JUnit"));
 
         verify(loginLogMapper).insert(any(LoginLog.class));
         verify(userMapper, never()).updateById(any(User.class));
+    }
+
+    @Test
+    void shouldFailWhenCaptchaInvalid() {
+        when(loginCaptchaService.verifyUserLoginCaptcha("key", "BAD1")).thenReturn(false);
+
+        assertThrows(BusinessException.class,
+                () -> userAuthService.login(new UserLoginRequest("20240001", "123456", "BAD1", "key"), "127.0.0.1", "JUnit"));
+
+        verify(loginLogMapper).insert(any(LoginLog.class));
+        verify(userMapper, never()).selectByStudentNo(any());
     }
 }

@@ -44,62 +44,73 @@
         </section>
 
         <section class="summary glass-card fade-up">
-          <div class="app-chip">{{ detail.categoryName }}</div>
+          <div class="summary-head">
+            <div class="app-chip">{{ detail.categoryName }}</div>
+            <el-tag v-if="showDemoNote" type="warning" effect="light">Demo Item</el-tag>
+          </div>
           <h1>{{ detail.title }}</h1>
-          <p class="desc">{{ detail.description || '卖家还没有补充更详细的商品描述。' }}</p>
+          <el-alert
+            v-if="showDemoNote"
+            type="info"
+            :closable="false"
+            show-icon
+            title="This seeded item is useful for demonstrating comments, recommendation cards, and online order creation."
+            class="demo-note"
+          />
+          <p class="desc">{{ detail.description || 'No detailed description has been added yet.' }}</p>
           <div class="meta-line">
             <strong>{{ formatPrice(detail.price) }}</strong>
-            <span>{{ detail.tradeMode || '线上 / 线下' }}</span>
-            <span>{{ detail.conditionLevel || '成色待补充' }}</span>
+            <span>{{ labelize(detail.tradeMode, 'Both') }}</span>
+            <span>{{ labelize(detail.conditionLevel, 'Condition pending') }}</span>
           </div>
           <el-descriptions :column="1" border>
-            <el-descriptions-item label="品牌">{{ detail.brand || '--' }}</el-descriptions-item>
-            <el-descriptions-item label="型号">{{ detail.model || '--' }}</el-descriptions-item>
-            <el-descriptions-item label="库存">{{ detail.stock || 1 }}</el-descriptions-item>
-            <el-descriptions-item label="手机号">{{ detail.contactPhone || '--' }}</el-descriptions-item>
+            <el-descriptions-item label="Brand">{{ detail.brand || '--' }}</el-descriptions-item>
+            <el-descriptions-item label="Model">{{ detail.model || '--' }}</el-descriptions-item>
+            <el-descriptions-item label="Stock">{{ detail.stock || 1 }}</el-descriptions-item>
+            <el-descriptions-item label="Phone">{{ detail.contactPhone || '--' }}</el-descriptions-item>
             <el-descriptions-item label="QQ">{{ detail.contactQq || '--' }}</el-descriptions-item>
-            <el-descriptions-item label="微信">{{ detail.contactWechat || '--' }}</el-descriptions-item>
-            <el-descriptions-item label="取货地址">{{ detail.pickupAddress || '--' }}</el-descriptions-item>
+            <el-descriptions-item label="WeChat">{{ detail.contactWechat || '--' }}</el-descriptions-item>
+            <el-descriptions-item label="Pickup Address">{{ detail.pickupAddress || '--' }}</el-descriptions-item>
           </el-descriptions>
           <div class="actions">
-            <el-button type="primary" @click="openOrder">在线下单</el-button>
-            <el-button plain @click="openComment">发表评论</el-button>
+            <el-button type="primary" @click="openOrder">Create Order</el-button>
+            <el-button plain @click="openComment">Add Comment</el-button>
           </div>
         </section>
       </div>
 
       <section class="detail-lower">
         <div class="seller glass-card fade-up">
-          <SectionHeading title="卖家信息" description="支持直接查看联系方式，也可以在线下单后沟通交付。" tag="Seller" />
-          <p class="seller-name">{{ detail.seller?.realName || '校园卖家' }}</p>
+          <SectionHeading title="Seller" description="Check seller information first, or place an order and coordinate later." tag="Seller" />
+          <p class="seller-name">{{ detail.seller?.realName || 'Campus Seller' }}</p>
           <p>{{ detail.seller?.collegeName || '--' }} {{ detail.seller?.majorName || '' }}</p>
-          <p>{{ detail.seller?.className || '班级信息未填写' }}</p>
+          <p>{{ detail.seller?.className || 'Class info not provided' }}</p>
         </div>
 
         <div class="comments glass-card fade-up">
-          <SectionHeading title="评论区" description="登录后可发表评论，卖家可以在个人中心回复。" tag="Comments" />
+          <SectionHeading title="Comments" description="After login you can comment here, and the seller can reply from the user center." tag="Comments" />
           <div v-if="commentsLoading" class="comment-skeletons">
             <el-skeleton v-for="index in 3" :key="index" animated :rows="3" />
           </div>
           <div v-else-if="comments.length" class="comment-list">
             <article v-for="comment in comments" :key="comment.commentId" class="comment-item">
               <div class="comment-head">
-                <strong>{{ comment.author?.realName || '同学' }}</strong>
+                <strong>{{ comment.author?.realName || 'Student' }}</strong>
                 <span>{{ formatDateTime(comment.createdAt) }}</span>
               </div>
               <p>{{ comment.content }}</p>
               <div v-if="comment.reply" class="reply-box">
-                <strong>卖家回复</strong>
+                <strong>Seller Reply</strong>
                 <p>{{ comment.reply.content }}</p>
               </div>
             </article>
           </div>
-          <EmptyState v-else title="还没有评论" description="如果你想了解细节，可以成为第一个留言的人。" />
+          <EmptyState v-else title="No comments yet" description="You can become the first person to ask about this item." />
         </div>
       </section>
 
       <section class="related-section">
-        <SectionHeading title="同类推荐" description="按当前分类补充一些公开在售商品，方便继续比较。" tag="Related" />
+        <SectionHeading title="Related Items" description="Other public items in the same category for quick comparison." tag="Related" />
         <div v-if="relatedLoading" class="related-grid skeleton-grid">
           <article v-for="index in 4" :key="index" class="glass-card related-skeleton">
             <el-skeleton animated>
@@ -114,53 +125,58 @@
           </article>
         </div>
         <div v-else-if="relatedItems.length" class="related-grid">
-          <ItemCard v-for="item in relatedItems" :key="item.itemId" :item="item" />
+          <ItemCard
+            v-for="item in relatedItems"
+            :key="item.itemId"
+            :item="item"
+            :demo-notes-enabled="Boolean(demoStatus.demoModeEnabled && demoStatus.demoItemNotesEnabled)"
+          />
         </div>
-        <EmptyState v-else title="暂无同类推荐" description="当前分类下还没有更多公开商品。" />
+        <EmptyState v-else title="No related items" description="There are no more public items in the same category right now." />
       </section>
     </template>
 
-    <EmptyState v-else title="商品不存在或已下架" description="这件商品可能已被删除，或者暂时不可公开浏览。">
-      <el-button type="primary" @click="router.push('/items')">返回商品广场</el-button>
+    <EmptyState v-else title="Item not found" description="This item may have been removed or is not publicly visible now.">
+      <el-button type="primary" @click="router.push('/items')">Back to marketplace</el-button>
     </EmptyState>
   </div>
 
-  <el-dialog v-model="commentVisible" title="发表评论" width="520px">
+  <el-dialog v-model="commentVisible" title="Add Comment" width="520px">
     <el-form>
-      <el-form-item label="评论内容">
+      <el-form-item label="Comment">
         <el-input v-model="commentContent" type="textarea" :rows="4" maxlength="300" show-word-limit />
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button @click="commentVisible = false">取消</el-button>
-      <el-button type="primary" :loading="submittingComment" @click="submitComment">提交评论</el-button>
+      <el-button @click="commentVisible = false">Cancel</el-button>
+      <el-button type="primary" :loading="submittingComment" @click="submitComment">Submit</el-button>
     </template>
   </el-dialog>
 
-  <el-dialog v-model="orderVisible" title="在线下单" width="560px">
-    <el-form :model="orderForm" label-width="92px">
-      <el-form-item label="收货人">
+  <el-dialog v-model="orderVisible" title="Create Order" width="560px">
+    <el-form :model="orderForm" label-width="110px">
+      <el-form-item label="Receiver Name">
         <el-input v-model="orderForm.receiverName" />
       </el-form-item>
-      <el-form-item label="手机号">
+      <el-form-item label="Phone Number">
         <el-input v-model="orderForm.receiverPhone" />
       </el-form-item>
-      <el-form-item label="配送方式">
+      <el-form-item label="Delivery Type">
         <el-select v-model="orderForm.deliveryType">
-          <el-option label="宿舍配送" value="dorm_delivery" />
-          <el-option label="线下自提" value="self_pickup" />
+          <el-option label="Dorm Delivery" value="dorm_delivery" />
+          <el-option label="Self Pickup" value="self_pickup" />
         </el-select>
       </el-form-item>
-      <el-form-item label="交付地址">
+      <el-form-item label="Address">
         <el-input v-model="orderForm.deliveryAddress" />
       </el-form-item>
-      <el-form-item label="备注">
+      <el-form-item label="Buyer Note">
         <el-input v-model="orderForm.buyerRemark" type="textarea" :rows="3" maxlength="200" show-word-limit />
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button @click="orderVisible = false">取消</el-button>
-      <el-button type="primary" :loading="submittingOrder" @click="submitOrder">提交订单</el-button>
+      <el-button @click="orderVisible = false">Cancel</el-button>
+      <el-button type="primary" :loading="submittingOrder" @click="submitOrder">Submit Order</el-button>
     </template>
   </el-dialog>
 </template>
@@ -176,7 +192,7 @@ import { publicApi } from '@/api/public';
 import { userApi } from '@/api/user';
 import { useAuthStore } from '@/stores/auth';
 import type { ItemDetail, ItemSummary, PublicComment } from '@/types/api';
-import { formatDateTime, formatPrice } from '@/utils/format';
+import { formatDateTime, formatPrice, labelize } from '@/utils/format';
 
 const route = useRoute();
 const router = useRouter();
@@ -194,6 +210,7 @@ const commentsLoading = ref(false);
 const relatedLoading = ref(false);
 const submittingComment = ref(false);
 const submittingOrder = ref(false);
+const demoStatus = ref<any>({ demoModeEnabled: false, demoItemNotesEnabled: true });
 
 const orderForm = ref({
   receiverName: '',
@@ -212,6 +229,8 @@ const galleryImages = computed(() => {
   }
   return images;
 });
+
+const showDemoNote = computed(() => Boolean(demoStatus.value.demoModeEnabled && demoStatus.value.demoItemNotesEnabled && /^\[(演示|Demo)\]/.test(detail.value?.title || '')));
 
 watch(
   () => route.params.id,
@@ -232,8 +251,9 @@ async function loadDetail(itemId: number) {
   comments.value = [];
   relatedItems.value = [];
   try {
-    const data = await publicApi.getItemDetail(itemId);
+    const [data, demoMode] = await Promise.all([publicApi.getItemDetail(itemId), publicApi.getDemoModeStatus()]);
     detail.value = data;
+    demoStatus.value = demoMode;
     activeImage.value = galleryImages.value[0] || '';
     orderForm.value.receiverName = authStore.userProfile?.realName || '';
     orderForm.value.receiverPhone = authStore.userProfile?.phone || '';
@@ -285,13 +305,13 @@ function openComment() {
 async function submitComment() {
   const itemId = Number(route.params.id);
   if (!commentContent.value.trim()) {
-    ElMessage.warning('请输入评论内容');
+    ElMessage.warning('Please enter your comment first.');
     return;
   }
   submittingComment.value = true;
   try {
     await userApi.createComment(itemId, { content: commentContent.value.trim() });
-    ElMessage.success('评论已提交');
+    ElMessage.success('Comment submitted successfully.');
     commentVisible.value = false;
     commentContent.value = '';
     await loadComments(itemId);
@@ -303,15 +323,15 @@ async function submitComment() {
 async function submitOrder() {
   if (!detail.value) return;
   if (!orderForm.value.receiverName.trim() || !orderForm.value.receiverPhone.trim()) {
-    ElMessage.warning('请先填写收货人和手机号');
+    ElMessage.warning('Please fill in receiver name and phone number first.');
     return;
   }
   submittingOrder.value = true;
   try {
     await userApi.createOrder({ itemId: detail.value.itemId, ...orderForm.value });
-    ElMessage.success('订单已创建');
+    ElMessage.success('Order created successfully.');
     orderVisible.value = false;
-    router.push('/user/orders');
+    router.push('/orders');
   } finally {
     submittingOrder.value = false;
   }
@@ -333,6 +353,15 @@ async function submitOrder() {
 .comments,
 .loading-panel {
   padding: 22px;
+}
+.summary-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+.demo-note {
+  margin-bottom: 16px;
 }
 .hero-image,
 .hero-placeholder,

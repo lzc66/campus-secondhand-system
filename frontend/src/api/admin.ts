@@ -1,6 +1,8 @@
 import { apiGet, apiPost, apiPut } from './http';
+import type { DemoDataSeedResult, DemoModeStatus, SmtpSettings, SmtpTestResult, UserCaptcha } from '@/types/api';
 
 export const adminApi = {
+  getLoginCaptcha: () => apiGet<UserCaptcha>('/api/v1/admin/auth/captcha'),
   login: (payload: Record<string, unknown>) => apiPost<any>('/api/v1/admin/auth/login', payload),
   me: () => apiGet<any>('/api/v1/admin/auth/me'),
   getDashboardOverview: () => apiGet<any>('/api/v1/admin/dashboard/overview'),
@@ -10,6 +12,12 @@ export const adminApi = {
   getCategorySalesRanking: (params?: Record<string, unknown>) => apiGet<any[]>('/api/v1/admin/dashboard/category-sales-ranking', { params }),
   getHotKeywords: (params?: Record<string, unknown>) => apiGet<any[]>('/api/v1/admin/dashboard/hot-search-keywords', { params }),
   getUserGrowth: (params?: Record<string, unknown>) => apiGet<any[]>('/api/v1/admin/dashboard/user-growth-trends', { params }),
+  getDemoModeStatus: () => apiGet<DemoModeStatus>('/api/v1/admin/demo-mode'),
+  seedDemoData: () => apiPost<DemoDataSeedResult>('/api/v1/admin/demo-mode/seed'),
+  updateDemoMode: (payload: { demoModeEnabled: boolean; demoItemNotesEnabled: boolean }) => apiPut<DemoModeStatus>('/api/v1/admin/demo-mode', payload),
+  getSmtpSettings: () => apiGet<SmtpSettings>('/api/v1/admin/system/smtp'),
+  updateSmtpSettings: (payload: Record<string, unknown>) => apiPut<SmtpSettings>('/api/v1/admin/system/smtp', payload),
+  sendSmtpTestEmail: (payload: Record<string, unknown>) => apiPost<SmtpTestResult>('/api/v1/admin/system/smtp/test', payload),
   getRegistrations: (params?: Record<string, unknown>) => apiGet<any>('/api/v1/admin/registration-applications', { params }),
   getRegistrationDetail: (applicationId: number) => apiGet<any>(`/api/v1/admin/registration-applications/${applicationId}`),
   approveRegistration: (applicationId: number, payload: Record<string, unknown>) => apiPost<any>(`/api/v1/admin/registration-applications/${applicationId}/approve`, payload),

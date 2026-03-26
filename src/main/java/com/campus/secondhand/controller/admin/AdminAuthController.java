@@ -6,6 +6,7 @@ import com.campus.secondhand.security.AdminPrincipal;
 import com.campus.secondhand.service.AdminAuthService;
 import com.campus.secondhand.vo.admin.AdminLoginResponse;
 import com.campus.secondhand.vo.admin.AdminProfileResponse;
+import com.campus.secondhand.vo.user.UserCaptchaResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,6 +24,11 @@ public class AdminAuthController {
 
     public AdminAuthController(AdminAuthService adminAuthService) {
         this.adminAuthService = adminAuthService;
+    }
+
+    @GetMapping("/captcha")
+    public ApiResponse<UserCaptchaResponse> captcha() {
+        return ApiResponse.success(adminAuthService.getLoginCaptcha());
     }
 
     @PostMapping("/login")

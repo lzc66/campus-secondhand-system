@@ -1,6 +1,6 @@
 <template>
   <div class="page-shell page-block">
-    <SectionHeading title="商品广场" description="按分类、关键词、价格与交易方式快速筛选校园二手物品。" tag="Marketplace" />
+    <SectionHeading title="商品广场" description="按分类、关键词、价格和交易方式快速筛选校园二手物品。" tag="Marketplace" />
 
     <section class="glass-card filters fade-up">
       <el-form :inline="true" :model="filters" class="filter-form">
@@ -13,7 +13,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="品牌">
-          <el-input v-model="filters.brand" clearable placeholder="如 Apple / 华为" />
+          <el-input v-model="filters.brand" clearable placeholder="例如 Apple / 华为" />
         </el-form-item>
         <el-form-item label="最低价">
           <el-input-number v-model="filters.priceMin" :min="0" :precision="2" />
@@ -42,6 +42,15 @@
         </el-form-item>
       </el-form>
     </section>
+
+    <el-alert
+      v-if="demoStatus.demoModeEnabled && demoStatus.demoItemNotesEnabled"
+      type="info"
+      :closable="false"
+      show-icon
+      class="demo-alert"
+      title="带有“演示条目”标签的商品是答辩样例，可用于讲解评论、推荐和订单流程。"
+    />
 
     <section class="result-bar">
       <div>
@@ -75,7 +84,7 @@
     </div>
 
     <div v-else-if="records.length" class="item-grid">
-      <ItemCard v-for="item in records" :key="item.itemId" :item="item" />
+      <ItemCard v-for="item in records" :key="item.itemId" :item="item" :demo-notes-enabled="Boolean(demoStatus.demoModeEnabled && demoStatus.demoItemNotesEnabled)" />
     </div>
 
     <EmptyState v-else title="没有找到匹配商品" description="换个关键词，或者放宽价格和分类条件再试试。">
@@ -112,6 +121,7 @@ const total = ref(0);
 const page = ref(1);
 const size = 12;
 const isLoading = ref(false);
+const demoStatus = ref<any>({ demoModeEnabled: false, demoItemNotesEnabled: true });
 
 const filters = reactive({
   categoryId: undefined as number | undefined,
@@ -125,12 +135,15 @@ const filters = reactive({
 
 const currentCategoryName = computed(() => categories.value.find((item) => item.categoryId === filters.categoryId)?.categoryName || '--');
 const activeFilterCount = computed(() => {
-  return [filters.categoryId, filters.keyword, filters.brand, filters.priceMin, filters.priceMax, filters.tradeMode].filter((item) => item !== undefined && item !== null && item !== '').length;
+  return [filters.categoryId, filters.keyword, filters.brand, filters.priceMin, filters.priceMax, filters.tradeMode]
+    .filter((item) => item !== undefined && item !== null && item !== '').length;
 });
 
 onMounted(async () => {
-  categories.value = await publicApi.getCategories();
-  syncFromRoute(route.query);
+  const [categoryList, demoMode] = await Promise.all([publicApi.getCategories(), publicApi.getDemoModeStatus()]);
+  categories.value = categoryList;
+  demoStatus.value = demoMode;
+  syncFromRoute(route.query as Record<string, unknown>);
   await fetchItems();
 });
 
@@ -138,7 +151,7 @@ watch(
   () => route.query,
   async (query, previous) => {
     if (JSON.stringify(query) === JSON.stringify(previous)) return;
-    syncFromRoute(query);
+    syncFromRoute(query as Record<string, unknown>);
     await fetchItems();
   }
 );
@@ -213,6 +226,9 @@ function readString(value: unknown) {
 }
 .filters {
   padding: 22px;
+  margin-bottom: 20px;
+}
+.demo-alert {
   margin-bottom: 20px;
 }
 .filter-form {

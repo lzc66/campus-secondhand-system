@@ -44,9 +44,11 @@ mvn -gs .mvn-settings.xml spring-boot:run
 ### Admin login
 
 ```bash
+curl http://localhost:8080/api/v1/admin/auth/captcha
+
 curl -X POST http://localhost:8080/api/v1/admin/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"adminNo":"admin1001","password":"123456"}'
+  -d '{"adminNo":"admin1001","password":"123456","captcha":"ABCD","captchaKey":"<CAPTCHA_KEY>"}'
 ```
 
 ### Init bootstrap
@@ -94,9 +96,11 @@ curl -X POST http://localhost:8080/api/v1/admin/registration-applications/1/appr
 ### User login
 
 ```bash
+curl http://localhost:8080/api/v1/user/auth/captcha
+
 curl -X POST http://localhost:8080/api/v1/user/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"studentNo":"20240001","password":"123456","captcha":"","captchaKey":""}'
+  -d '{"studentNo":"20250001","password":"123456","captcha":"ABCD","captchaKey":"<CAPTCHA_KEY>"}'
 ```
 
 ### Get or update user profile

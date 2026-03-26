@@ -46,6 +46,32 @@ export interface LoginResponse<TProfile> {
   adminProfile?: TProfile;
 }
 
+export interface UserCaptcha {
+  captchaKey: string;
+  imageData: string;
+  expiresInSeconds: number;
+}
+
+export interface SmtpSettings {
+  enabled: boolean;
+  host?: string;
+  port?: number;
+  username?: string;
+  fromAddress?: string;
+  authEnabled: boolean;
+  starttlsEnabled: boolean;
+  sslEnabled: boolean;
+  passwordConfigured: boolean;
+  smtpReady: boolean;
+  updatedAt?: string;
+  updatedByAdminId?: number;
+}
+
+export interface SmtpTestResult {
+  toEmail: string;
+  subject: string;
+  testedAt: string;
+}
 export interface ItemSummary {
   itemId: number;
   categoryId: number;
@@ -159,4 +185,27 @@ export interface RecommendationItem {
   reasonCode?: string;
   reasonText?: string;
   score?: number;
+}
+export interface DemoDataSummary {
+  userCount: number;
+  itemCount: number;
+  orderCount: number;
+  wantedPostCount: number;
+  announcementCount: number;
+  pendingRegistrationCount: number;
+}
+
+export interface DemoModeStatus {
+  demoModeEnabled: boolean;
+  demoItemNotesEnabled: boolean;
+  demoDataSeeded: boolean;
+  demoDataSeededAt?: string;
+  demoSummary: DemoDataSummary;
+}
+
+export interface DemoDataSeedResult {
+  createdCounts: DemoDataSummary;
+  totalCounts: DemoDataSummary;
+  demoDataSeeded: boolean;
+  demoDataSeededAt?: string;
 }

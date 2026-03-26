@@ -12,8 +12,9 @@ import com.campus.secondhand.enums.UserAccountStatus;
 import com.campus.secondhand.mapper.NotificationMapper;
 import com.campus.secondhand.mapper.UserMapper;
 import com.campus.secondhand.service.NotificationService;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Value;
+import com.campus.secondhand.service.SmtpMailSenderFactory;
+import com.campus.secondhand.service.SmtpRuntimeSettings;
+import com.campus.secondhand.service.SmtpSettingsService;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -26,17 +27,17 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationMapper notificationMapper;
     private final UserMapper userMapper;
-    private final ObjectProvider<JavaMailSender> mailSenderProvider;
-    private final String mailUsername;
+    private final SmtpSettingsService smtpSettingsService;
+    private final SmtpMailSenderFactory smtpMailSenderFactory;
 
     public NotificationServiceImpl(NotificationMapper notificationMapper,
                                    UserMapper userMapper,
-                                   ObjectProvider<JavaMailSender> mailSenderProvider,
-                                   @Value("${spring.mail.username:}") String mailUsername) {
+                                   SmtpSettingsService smtpSettingsService,
+                                   SmtpMailSenderFactory smtpMailSenderFactory) {
         this.notificationMapper = notificationMapper;
         this.userMapper = userMapper;
-        this.mailSenderProvider = mailSenderProvider;
-        this.mailUsername = mailUsername;
+        this.smtpSettingsService = smtpSettingsService;
+        this.smtpMailSenderFactory = smtpMailSenderFactory;
     }
 
     @Override
@@ -123,14 +124,13 @@ public class NotificationServiceImpl implements NotificationService {
                 .sendStatus(NotificationSendStatus.PENDING)
                 .build();
 
-        JavaMailSender mailSender = mailSenderProvider.getIfAvailable();
-        if (mailSender != null) {
+        SmtpRuntimeSettings settings = smtpSettingsService.getRuntimeSettings();
+        if (settings != null) {
             try {
+                JavaMailSender mailSender = smtpMailSenderFactory.createSender(settings);
                 SimpleMailMessage message = new SimpleMailMessage();
                 message.setTo(receiverEmail);
-                if (!mailUsername.isBlank()) {
-                    message.setFrom(mailUsername);
-                }
+                message.setFrom(settings.fromAddress());
                 message.setSubject(title);
                 message.setText(content);
                 mailSender.send(message);
