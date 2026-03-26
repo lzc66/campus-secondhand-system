@@ -39,7 +39,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
+                                "/api/v1/admin/auth/captcha",
                                 "/api/v1/admin/auth/login",
+                                "/api/v1/user/auth/captcha",
                                 "/api/v1/user/auth/login",
                                 "/api/v1/public/**",
                                 "/uploads/**",
@@ -48,6 +50,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
                         .requestMatchers("/api/v1/admin/init/**").hasRole("SUPER_ADMIN")
+                        .requestMatchers("/api/v1/admin/system/smtp/**").hasRole("SUPER_ADMIN")
                         .requestMatchers("/api/v1/admin/registration-applications/**").hasAnyRole("SUPER_ADMIN", "AUDITOR")
                         .requestMatchers("/api/v1/admin/announcements/**").hasAnyRole("SUPER_ADMIN", "AUDITOR", "OPERATOR")
                         .requestMatchers("/api/v1/admin/users/**").hasAnyRole("SUPER_ADMIN", "AUDITOR", "OPERATOR")

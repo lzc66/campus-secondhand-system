@@ -1,8 +1,9 @@
 import { apiGet, apiPost } from './http';
-import type { Announcement, ItemCategory, ItemDetail, ItemSummary, PageResponse, PublicComment, WantedPost } from '@/types/api';
+import type { Announcement, DemoModeStatus, ItemCategory, ItemDetail, ItemSummary, PageResponse, PublicComment, WantedPost } from '@/types/api';
 
 export const publicApi = {
   getCategories: () => apiGet<ItemCategory[]>('/api/v1/public/item-categories'),
+  getDemoModeStatus: () => apiGet<DemoModeStatus>('/api/v1/public/demo-mode'),
   getAnnouncements: (params?: Record<string, unknown>) => apiGet<PageResponse<Announcement>>('/api/v1/public/announcements', { params }),
   getAnnouncementDetail: (announcementId: number) => apiGet<Announcement>(`/api/v1/public/announcements/${announcementId}`),
   getItems: (params?: Record<string, unknown>) => apiGet<PageResponse<ItemSummary>>('/api/v1/public/items', { params }),

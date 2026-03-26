@@ -1,5 +1,6 @@
 com\campus\secondhand\service\AdminReportExportServiceTest.class
 com\campus\secondhand\service\UserProfileServiceTest.class
+com\campus\secondhand\service\LoginCaptchaServiceTest.class
 com\campus\secondhand\service\UserWantedPostServiceTest.class
 com\campus\secondhand\security\JwtTokenProviderTest.class
 com\campus\secondhand\service\UserNotificationCenterServiceTest.class

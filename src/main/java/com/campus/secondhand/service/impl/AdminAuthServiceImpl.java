@@ -10,8 +10,10 @@ import com.campus.secondhand.mapper.LoginLogMapper;
 import com.campus.secondhand.security.AdminPrincipal;
 import com.campus.secondhand.security.JwtTokenProvider;
 import com.campus.secondhand.service.AdminAuthService;
+import com.campus.secondhand.service.LoginCaptchaService;
 import com.campus.secondhand.vo.admin.AdminLoginResponse;
 import com.campus.secondhand.vo.admin.AdminProfileResponse;
+import com.campus.secondhand.vo.user.UserCaptchaResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,36 +27,49 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     private final LoginLogMapper loginLogMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final LoginCaptchaService loginCaptchaService;
 
     public AdminAuthServiceImpl(AdminMapper adminMapper,
                                 LoginLogMapper loginLogMapper,
                                 PasswordEncoder passwordEncoder,
-                                JwtTokenProvider jwtTokenProvider) {
+                                JwtTokenProvider jwtTokenProvider,
+                                LoginCaptchaService loginCaptchaService) {
         this.adminMapper = adminMapper;
         this.loginLogMapper = loginLogMapper;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.loginCaptchaService = loginCaptchaService;
+    }
+
+    @Override
+    public UserCaptchaResponse getLoginCaptcha() {
+        return loginCaptchaService.generateAdminLoginCaptcha();
     }
 
     @Override
     public AdminLoginResponse login(AdminLoginRequest request, String ipAddress, String userAgent) {
+        if (!loginCaptchaService.verifyAdminLoginCaptcha(request.captchaKey(), request.captcha())) {
+            saveLoginLog(null, request.adminNo(), "failure", "CAPTCHA_INVALID", 0, ipAddress, userAgent);
+            throw new BusinessException(40103, HttpStatus.UNAUTHORIZED, "Captcha is invalid or expired");
+        }
+
         Admin admin = adminMapper.selectByAdminNo(request.adminNo());
         if (admin == null) {
-            saveLoginLog(null, request.adminNo(), "failure", "ADMIN_NOT_FOUND", ipAddress, userAgent);
+            saveLoginLog(null, request.adminNo(), "failure", "ADMIN_NOT_FOUND", 1, ipAddress, userAgent);
             throw new BusinessException(40101, HttpStatus.UNAUTHORIZED, "Admin account or password is incorrect");
         }
         if (admin.getAccountStatus() != AdminAccountStatus.ACTIVE) {
-            saveLoginLog(admin.getAdminId(), request.adminNo(), "failure", "ADMIN_DISABLED", ipAddress, userAgent);
+            saveLoginLog(admin.getAdminId(), request.adminNo(), "failure", "ADMIN_DISABLED", 1, ipAddress, userAgent);
             throw new BusinessException(40301, HttpStatus.FORBIDDEN, "Admin account is disabled");
         }
         if (!passwordEncoder.matches(request.password(), admin.getPasswordHash())) {
-            saveLoginLog(admin.getAdminId(), request.adminNo(), "failure", "PASSWORD_NOT_MATCH", ipAddress, userAgent);
+            saveLoginLog(admin.getAdminId(), request.adminNo(), "failure", "PASSWORD_NOT_MATCH", 1, ipAddress, userAgent);
             throw new BusinessException(40102, HttpStatus.UNAUTHORIZED, "Admin account or password is incorrect");
         }
 
         admin.setLastLoginAt(LocalDateTime.now());
         adminMapper.updateById(admin);
-        saveLoginLog(admin.getAdminId(), request.adminNo(), "success", null, ipAddress, userAgent);
+        saveLoginLog(admin.getAdminId(), request.adminNo(), "success", null, 1, ipAddress, userAgent);
 
         String token = jwtTokenProvider.createAdminToken(
                 admin.getAdminId(),
@@ -79,7 +94,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         return toProfile(admin);
     }
 
-    private void saveLoginLog(Long accountId, String loginName, String loginResult, String failReason,
+    private void saveLoginLog(Long accountId, String loginName, String loginResult, String failReason, int captchaPassed,
                               String ipAddress, String userAgent) {
         LoginLog loginLog = LoginLog.builder()
                 .accountType("admin")
@@ -87,7 +102,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
                 .loginName(loginName)
                 .loginResult(loginResult)
                 .failReason(failReason)
-                .captchaPassed(1)
+                .captchaPassed(captchaPassed)
                 .ipAddress(ipAddress)
                 .userAgent(userAgent)
                 .build();

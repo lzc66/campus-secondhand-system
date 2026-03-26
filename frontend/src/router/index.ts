@@ -58,6 +58,7 @@ const router = createRouter({
         { path: 'items', name: 'admin-items', component: () => import('@/views/admin/ItemsView.vue') },
         { path: 'orders', name: 'admin-orders', component: () => import('@/views/admin/OrdersView.vue') },
         { path: 'announcements', name: 'admin-announcements', component: () => import('@/views/admin/AnnouncementsView.vue') },
+        { path: 'mail-settings', name: 'admin-mail-settings', component: () => import('@/views/admin/MailSettingsView.vue') },
         { path: 'reports', name: 'admin-reports', component: () => import('@/views/admin/ReportsView.vue') }
       ]
     }

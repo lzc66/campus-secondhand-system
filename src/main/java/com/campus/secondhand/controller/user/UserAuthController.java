@@ -4,6 +4,7 @@ import com.campus.secondhand.common.api.ApiResponse;
 import com.campus.secondhand.dto.user.UserLoginRequest;
 import com.campus.secondhand.security.UserPrincipal;
 import com.campus.secondhand.service.UserAuthService;
+import com.campus.secondhand.vo.user.UserCaptchaResponse;
 import com.campus.secondhand.vo.user.UserLoginResponse;
 import com.campus.secondhand.vo.user.UserProfileResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,6 +24,11 @@ public class UserAuthController {
 
     public UserAuthController(UserAuthService userAuthService) {
         this.userAuthService = userAuthService;
+    }
+
+    @GetMapping("/captcha")
+    public ApiResponse<UserCaptchaResponse> captcha() {
+        return ApiResponse.success(userAuthService.getLoginCaptcha());
     }
 
     @PostMapping("/login")

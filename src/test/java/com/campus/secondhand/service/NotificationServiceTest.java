@@ -14,7 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import java.util.List;
@@ -33,12 +33,16 @@ class NotificationServiceTest {
     @Mock
     private UserMapper userMapper;
     @Mock
-    private ObjectProvider<JavaMailSender> mailSenderProvider;
+    private SmtpSettingsService smtpSettingsService;
+    @Mock
+    private SmtpMailSenderFactory smtpMailSenderFactory;
+    @Mock
+    private JavaMailSender javaMailSender;
 
     @Test
-    void shouldKeepEmailNotificationPendingWhenMailSenderMissing() {
-        when(mailSenderProvider.getIfAvailable()).thenReturn(null);
-        NotificationServiceImpl service = new NotificationServiceImpl(notificationMapper, userMapper, mailSenderProvider, "");
+    void shouldKeepEmailNotificationPendingWhenSmtpDisabled() {
+        when(smtpSettingsService.getRuntimeSettings()).thenReturn(null);
+        NotificationServiceImpl service = new NotificationServiceImpl(notificationMapper, userMapper, smtpSettingsService, smtpMailSenderFactory);
 
         service.sendRegistrationRejected(RegistrationApplication.builder()
                 .applicationId(5L)
@@ -51,12 +55,31 @@ class NotificationServiceTest {
     }
 
     @Test
+    void shouldMarkEmailNotificationSentWhenSmtpConfigured() {
+        when(smtpSettingsService.getRuntimeSettings()).thenReturn(new SmtpRuntimeSettings(
+                "smtp.example.com", 587, "mailer@example.com", "secret", "mailer@example.com", true, true, false
+        ));
+        when(smtpMailSenderFactory.createSender(any())).thenReturn(javaMailSender);
+        NotificationServiceImpl service = new NotificationServiceImpl(notificationMapper, userMapper, smtpSettingsService, smtpMailSenderFactory);
+
+        service.sendRegistrationRejected(RegistrationApplication.builder()
+                .applicationId(5L)
+                .email("alice@campus.local")
+                .build(), 1L);
+
+        verify(javaMailSender).send(any(SimpleMailMessage.class));
+        ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
+        verify(notificationMapper).insert(captor.capture());
+        assertEquals(NotificationSendStatus.SENT, captor.getValue().getSendStatus());
+    }
+
+    @Test
     void shouldInsertSiteNotificationsForPublishedAnnouncement() {
         when(userMapper.selectList(any())).thenReturn(List.of(
                 User.builder().userId(11L).email("alice@campus.local").accountStatus(UserAccountStatus.ACTIVE).build(),
                 User.builder().userId(22L).email("bob@campus.local").accountStatus(UserAccountStatus.ACTIVE).build()
         ));
-        NotificationServiceImpl service = new NotificationServiceImpl(notificationMapper, userMapper, mailSenderProvider, "");
+        NotificationServiceImpl service = new NotificationServiceImpl(notificationMapper, userMapper, smtpSettingsService, smtpMailSenderFactory);
 
         service.sendAnnouncementPublished(Announcement.builder()
                 .announcementId(7L)

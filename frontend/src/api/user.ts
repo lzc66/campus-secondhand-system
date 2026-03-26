@@ -1,7 +1,8 @@
 import { apiDelete, apiGet, apiPost, apiPut } from './http';
-import type { ItemDetail, NotificationItem, PageResponse, RecommendationItem, UserProfile, WantedPost } from '@/types/api';
+import type { ItemDetail, NotificationItem, PageResponse, RecommendationItem, UserCaptcha, UserProfile, WantedPost } from '@/types/api';
 
 export const userApi = {
+  getLoginCaptcha: () => apiGet<UserCaptcha>('/api/v1/user/auth/captcha'),
   login: (payload: Record<string, unknown>) => apiPost<any>('/api/v1/user/auth/login', payload),
   getCurrentUser: () => apiGet<UserProfile>('/api/v1/user/auth/me'),
   getProfile: () => apiGet<UserProfile>('/api/v1/user/profile'),

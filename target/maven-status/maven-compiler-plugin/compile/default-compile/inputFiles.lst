@@ -10,13 +10,16 @@ D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\se
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\controller\admin\AdminAnnouncementController.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\controller\admin\AdminAuthController.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\controller\admin\AdminDashboardController.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\controller\admin\AdminDemoModeController.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\controller\admin\AdminInitController.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\controller\admin\AdminItemManagementController.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\controller\admin\AdminOrderManagementController.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\controller\admin\AdminRegistrationApplicationController.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\controller\admin\AdminReportExportController.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\controller\admin\AdminSmtpSettingsController.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\controller\admin\AdminUserManagementController.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\controller\publicapi\PublicAnnouncementController.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\controller\publicapi\PublicDemoModeController.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\controller\publicapi\PublicFileController.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\controller\publicapi\PublicItemCategoryController.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\controller\publicapi\PublicItemCommentController.java
@@ -36,7 +39,10 @@ D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\se
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\dto\admin\AnnouncementActionRequest.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\dto\admin\ReviewRegistrationApplicationRequest.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\dto\admin\SaveAnnouncementRequest.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\dto\admin\SendSmtpTestEmailRequest.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\dto\admin\UpdateDemoModeRequest.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\dto\admin\UpdateItemStatusRequest.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\dto\admin\UpdateSmtpSettingsRequest.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\dto\admin\UpdateUserStatusRequest.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\dto\publicapi\RegistrationApplicationSubmitRequest.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\dto\user\CancelOrderRequest.java
@@ -62,6 +68,7 @@ D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\se
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\entity\OrderStatusLog.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\entity\RegistrationApplication.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\entity\SearchHistory.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\entity\SystemSetting.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\entity\TradeOrder.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\entity\User.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\entity\UserBehaviorLog.java
@@ -105,6 +112,7 @@ D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\se
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\mapper\OrderStatusLogMapper.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\mapper\RegistrationApplicationMapper.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\mapper\SearchHistoryMapper.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\mapper\SystemSettingMapper.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\mapper\TradeOrderMapper.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\mapper\UserBehaviorLogMapper.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\mapper\UserMapper.java
@@ -118,6 +126,7 @@ D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\se
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\AdminAnnouncementService.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\AdminAuthService.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\AdminDashboardService.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\AdminDemoModeService.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\AdminItemManagementService.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\AdminOrderManagementService.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\AdminReportExportService.java
@@ -126,6 +135,7 @@ D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\se
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\AdminAnnouncementServiceImpl.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\AdminAuthServiceImpl.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\AdminDashboardServiceImpl.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\AdminDemoModeServiceImpl.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\AdminItemManagementServiceImpl.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\AdminOrderManagementServiceImpl.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\AdminReportExportServiceImpl.java
@@ -133,6 +143,7 @@ D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\se
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\ItemCategoryServiceImpl.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\ItemCommentServiceImpl.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\LocalFileStorageService.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\LoginCaptchaServiceImpl.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\NotificationServiceImpl.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\PublicAnnouncementServiceImpl.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\PublicItemServiceImpl.java
@@ -140,6 +151,8 @@ D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\se
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\PublicWantedPostServiceImpl.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\RecommendationBehaviorServiceImpl.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\RegistrationReviewServiceImpl.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\SmtpMailSenderFactoryImpl.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\SmtpSettingsServiceImpl.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\SystemInitServiceImpl.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\UserAuthServiceImpl.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\UserItemServiceImpl.java
@@ -150,6 +163,7 @@ D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\se
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\impl\UserWantedPostServiceImpl.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\ItemCategoryService.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\ItemCommentService.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\LoginCaptchaService.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\NotificationService.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\PublicAnnouncementService.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\PublicItemService.java
@@ -157,6 +171,9 @@ D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\se
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\PublicWantedPostService.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\RecommendationBehaviorService.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\RegistrationReviewService.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\SmtpMailSenderFactory.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\SmtpRuntimeSettings.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\SmtpSettingsService.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\SystemInitService.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\UserAuthService.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\service\UserItemService.java
@@ -190,11 +207,16 @@ D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\se
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\admin\AdminUserPageResponse.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\admin\AdminUserSummaryResponse.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\admin\BootstrapResponse.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\admin\DemoDataSeedResponse.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\admin\DemoDataSummaryResponse.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\admin\DemoModeStatusResponse.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\admin\InitStatusResponse.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\admin\RegistrationApplicationDetailResponse.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\admin\RegistrationApplicationPageResponse.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\admin\RegistrationApplicationSummaryResponse.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\admin\ReviewRegistrationResponse.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\admin\SmtpSettingsResponse.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\admin\SmtpTestResponse.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\common\MediaFileResponse.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\publicapi\CommentAuthorResponse.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\publicapi\ItemCategoryResponse.java
@@ -216,6 +238,7 @@ D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\se
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\user\ItemImageResponse.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\user\OrderItemResponse.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\user\OrderPartyResponse.java
+D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\user\UserCaptchaResponse.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\user\UserItemDetailResponse.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\user\UserItemPageResponse.java
 D:\Users\White\Software Engineering\Software Project\src\main\java\com\campus\secondhand\vo\user\UserItemSummaryResponse.java

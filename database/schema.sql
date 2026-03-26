@@ -488,3 +488,19 @@ CREATE TABLE admin_operation_logs (
         FOREIGN KEY (admin_id) REFERENCES admins(admin_id)
         ON DELETE SET NULL
 ) ENGINE=InnoDB COMMENT='Administrative operation logs';
+
+CREATE TABLE system_settings (
+    setting_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
+    setting_key VARCHAR(100) NOT NULL COMMENT 'Unique setting key',
+    setting_value TEXT NULL COMMENT 'Setting value',
+    value_type VARCHAR(20) NOT NULL DEFAULT 'string' COMMENT 'Value type such as string/boolean/datetime/json',
+    updated_by_admin_id BIGINT UNSIGNED NULL COMMENT 'Last updated admin id',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Created time',
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Updated time',
+    PRIMARY KEY (setting_id),
+    UNIQUE KEY uk_system_settings_key (setting_key),
+    KEY idx_system_settings_admin (updated_by_admin_id),
+    CONSTRAINT fk_system_settings_admin
+        FOREIGN KEY (updated_by_admin_id) REFERENCES admins(admin_id)
+        ON DELETE SET NULL
+) ENGINE=InnoDB COMMENT='Lightweight key-value settings for system switches such as demo mode';
