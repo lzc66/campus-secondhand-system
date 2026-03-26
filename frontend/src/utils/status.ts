@@ -24,10 +24,25 @@ const ITEM_STATUS_LABELS: Record<string, string> = {
 const ORDER_STATUS_LABELS: Record<string, string> = {
   pending_confirm: '待确认',
   confirmed: '待配送',
+  awaiting_delivery: '待配送',
   delivering: '配送中',
   completed: '已完成',
   cancelled: '已取消',
   closed: '已关闭'
+};
+
+const ITEM_CONDITION_LABELS: Record<string, string> = {
+  new: '全新',
+  almost_new: '几乎全新',
+  lightly_used: '轻微使用',
+  used: '正常使用',
+  well_used: '明显使用痕迹'
+};
+
+const DELIVERY_TYPE_LABELS: Record<string, string> = {
+  dorm_delivery: '送货到宿舍',
+  self_pickup: '宿舍自取',
+  face_to_face: '当面交易'
 };
 
 const GENDER_LABELS: Record<string, string> = {
@@ -76,10 +91,18 @@ export function getOrderStatusLabel(status?: string) {
 
 export function getOrderStatusTagType(status?: string): TagProps['type'] {
   if (status === 'completed') return 'success';
-  if (status === 'pending_confirm' || status === 'confirmed') return 'warning';
+  if (status === 'pending_confirm' || status === 'confirmed' || status === 'awaiting_delivery') return 'warning';
   if (status === 'delivering') return 'primary';
   if (status === 'cancelled' || status === 'closed') return 'info';
   return 'danger';
+}
+
+export function getItemConditionLabel(condition?: string) {
+  return ITEM_CONDITION_LABELS[String(condition || '')] || '成色待补充';
+}
+
+export function getDeliveryTypeLabel(type?: string) {
+  return DELIVERY_TYPE_LABELS[String(type || '')] || '待确认';
 }
 
 export function getGenderLabel(gender?: string) {

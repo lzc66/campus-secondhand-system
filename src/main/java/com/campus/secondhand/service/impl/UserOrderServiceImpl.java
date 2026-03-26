@@ -149,9 +149,9 @@ public class UserOrderServiceImpl implements UserOrderService {
                             orderItem == null ? null : orderItem.getItemTitleSnapshot(),
                             orderItem == null ? null : orderItem.getQuantity(),
                             order.getTotalAmount(),
-                            order.getOrderStatus().getValue(),
-                            order.getPaymentStatus().getValue(),
-                            order.getDeliveryType().getValue(),
+                            order.getOrderStatus() == null ? null : order.getOrderStatus().getValue(),
+                            order.getPaymentStatus() == null ? null : order.getPaymentStatus().getValue(),
+                            order.getDeliveryType() == null ? null : order.getDeliveryType().getValue(),
                             order.getCreatedAt()
                     );
                 })
@@ -252,11 +252,11 @@ public class UserOrderServiceImpl implements UserOrderService {
         return new UserOrderDetailResponse(
                 order.getOrderId(),
                 order.getOrderNo(),
-                order.getOrderType().getValue(),
-                order.getPaymentMethod().getValue(),
-                order.getPaymentStatus().getValue(),
-                order.getOrderStatus().getValue(),
-                order.getDeliveryType().getValue(),
+                order.getOrderType() == null ? null : order.getOrderType().getValue(),
+                order.getPaymentMethod() == null ? null : order.getPaymentMethod().getValue(),
+                order.getPaymentStatus() == null ? null : order.getPaymentStatus().getValue(),
+                order.getOrderStatus() == null ? null : order.getOrderStatus().getValue(),
+                order.getDeliveryType() == null ? null : order.getDeliveryType().getValue(),
                 order.getReceiverName(),
                 order.getReceiverPhone(),
                 order.getDeliveryAddress(),
@@ -331,7 +331,11 @@ public class UserOrderServiceImpl implements UserOrderService {
     }
 
     private Map<Long, User> loadUsers(List<Long> userIds) {
-        return userMapper.selectBatchIds(userIds.stream().filter(Objects::nonNull).distinct().toList())
+        List<Long> normalizedUserIds = userIds.stream().filter(Objects::nonNull).distinct().toList();
+        if (normalizedUserIds.isEmpty()) {
+            return Map.of();
+        }
+        return userMapper.selectBatchIds(normalizedUserIds)
                 .stream().collect(Collectors.toMap(User::getUserId, user -> user));
     }
 

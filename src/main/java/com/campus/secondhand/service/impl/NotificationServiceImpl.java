@@ -49,8 +49,8 @@ public class NotificationServiceImpl implements NotificationService {
                 .channel(NotificationChannel.SITE)
                 .businessType(NotificationBusinessType.REGISTER_REVIEW)
                 .businessId(application.getApplicationId())
-                .title("Registration approved")
-                .content("Your registration application has been approved. You can now sign in with your student number.")
+                .title("注册审核已通过")
+                .content("你的注册申请已通过审核，现在可以使用学号和密码登录系统。")
                 .sendStatus(NotificationSendStatus.SENT)
                 .sentAt(LocalDateTime.now())
                 .build();
@@ -62,23 +62,23 @@ public class NotificationServiceImpl implements NotificationService {
                 adminId,
                 NotificationBusinessType.REGISTER_REVIEW,
                 application.getApplicationId(),
-                "Registration approved",
-                "Your registration application has been approved. You can now sign in with your student number and password."
+                "注册审核已通过",
+                "你的注册申请已通过审核，现在可以使用学号和密码登录系统。"
         );
     }
 
     @Override
     public void sendRegistrationRejected(RegistrationApplication application, Long adminId) {
         String content = application.getReviewRemark() == null || application.getReviewRemark().isBlank()
-                ? "Your registration application has been rejected. You can submit a new application later."
-                : "Your registration application has been rejected. Remark: " + application.getReviewRemark();
+                ? "你的注册申请未通过审核，可在完善资料后重新提交。"
+                : "你的注册申请未通过审核。审核备注：" + application.getReviewRemark();
         createEmailNotification(
                 null,
                 application.getEmail(),
                 adminId,
                 NotificationBusinessType.REGISTER_REVIEW,
                 application.getApplicationId(),
-                "Registration rejected",
+                "注册审核未通过",
                 content
         );
     }

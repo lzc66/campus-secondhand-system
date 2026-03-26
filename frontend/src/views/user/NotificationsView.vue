@@ -1,6 +1,10 @@
 <template>
   <section class="glass-card panel">
-    <SectionHeading title="通知中心" description="集中查看站内通知，支持按未读筛选和一键全部已读。" tag="Inbox">
+    <SectionHeading
+      title="通知中心"
+      description="集中查看站内通知，支持按未读筛选和一键全部已读。"
+      tag="Inbox"
+    >
       <el-button @click="readAll">全部已读</el-button>
     </SectionHeading>
 
@@ -11,7 +15,7 @@
 
     <div class="notification-list">
       <article v-for="item in records" :key="item.notificationId" class="notice-row glass-card">
-        <div>
+        <div class="notice-main">
           <strong>{{ item.title }}</strong>
           <p>{{ item.content }}</p>
         </div>
@@ -48,13 +52,13 @@ async function fetchNotifications() {
 async function readOne(notificationId: number) {
   await userApi.markNotificationRead(notificationId);
   ElMessage.success('通知已标记为已读');
-  fetchNotifications();
+  await fetchNotifications();
 }
 
 async function readAll() {
   await userApi.markAllNotificationsRead();
   ElMessage.success('所有通知已标记为已读');
-  fetchNotifications();
+  await fetchNotifications();
 }
 </script>
 
@@ -62,25 +66,39 @@ async function readAll() {
 .panel {
   padding: 24px;
 }
+
 .notification-list {
   display: grid;
   gap: 12px;
   margin-top: 18px;
 }
+
 .notice-row {
   padding: 18px;
   display: flex;
   justify-content: space-between;
   gap: 18px;
 }
-.notice-row p {
+
+.notice-main p {
   color: var(--text-soft);
   margin: 10px 0 0;
 }
+
 .notice-actions {
   display: grid;
   gap: 10px;
   justify-items: end;
   color: var(--text-soft);
+}
+
+@media (max-width: 720px) {
+  .notice-row {
+    flex-direction: column;
+  }
+
+  .notice-actions {
+    justify-items: start;
+  }
 }
 </style>

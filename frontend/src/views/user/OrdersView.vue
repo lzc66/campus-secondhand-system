@@ -1,16 +1,30 @@
 <template>
   <section class="glass-card panel">
-    <SectionHeading title="My Orders" description="Switch between buyer and seller views to follow confirmation, delivery, and completion states." tag="Orders" />
+    <SectionHeading
+      title="我的订单"
+      description="可在买家和卖家视角之间切换，跟进确认、配送和完成流程。"
+      tag="Orders"
+    />
 
     <div class="toolbar">
       <el-radio-group v-model="role" @change="handleRoleChange">
-        <el-radio-button value="buyer">Buyer</el-radio-button>
-        <el-radio-button value="seller">Seller</el-radio-button>
+        <el-radio-button value="buyer">我是买家</el-radio-button>
+        <el-radio-button value="seller">我是卖家</el-radio-button>
       </el-radio-group>
+
       <div class="summary-strip">
-        <div class="summary-chip"><strong>{{ records.length }}</strong><span>Current Page</span></div>
-        <div class="summary-chip"><strong>{{ pendingCount }}</strong><span>Pending</span></div>
-        <div class="summary-chip"><strong>{{ completedCount }}</strong><span>Completed</span></div>
+        <div class="summary-chip">
+          <strong>{{ records.length }}</strong>
+          <span>当前页订单</span>
+        </div>
+        <div class="summary-chip">
+          <strong>{{ pendingCount }}</strong>
+          <span>处理中</span>
+        </div>
+        <div class="summary-chip">
+          <strong>{{ completedCount }}</strong>
+          <span>已完成</span>
+        </div>
       </div>
     </div>
 
@@ -19,7 +33,7 @@
       type="info"
       :closable="false"
       show-icon
-      title="Demo orders include helper labels so you can explain the order lifecycle during presentation."
+      title="演示订单会附带说明标签，方便在答辩时讲解订单生命周期。"
       class="demo-alert"
     />
 
@@ -31,33 +45,35 @@
 
     <template v-else-if="records.length">
       <el-table :data="records" stripe class="order-table">
-        <el-table-column prop="orderNo" label="Order No." min-width="190">
-          <template #default="scope">
+        <el-table-column prop="orderNo" label="订单号" min-width="190">
+          <template #default="{ row }">
             <div class="order-no-cell">
-              <span>{{ scope.row.orderNo }}</span>
-              <el-tag v-if="showDemoTag(scope.row)" size="small" effect="plain" type="warning">Demo</el-tag>
+              <span>{{ row.orderNo }}</span>
+              <el-tag v-if="showDemoTag(row)" size="small" effect="plain" type="warning">演示</el-tag>
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="itemTitle" label="Item" min-width="220" />
-        <el-table-column label="Status" width="130">
-          <template #default="scope">
-            <el-tag :type="orderStatusType(scope.row.orderStatus)">{{ orderStatusLabel(scope.row.orderStatus) }}</el-tag>
+        <el-table-column prop="itemTitle" label="商品" min-width="220" />
+        <el-table-column label="订单状态" width="130">
+          <template #default="{ row }">
+            <el-tag :type="getOrderStatusTagType(row.orderStatus)">
+              {{ getOrderStatusLabel(row.orderStatus) }}
+            </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="Amount" width="130">
-          <template #default="scope">{{ formatPrice(scope.row.totalAmount) }}</template>
+        <el-table-column label="金额" width="130">
+          <template #default="{ row }">{{ formatPrice(row.totalAmount) }}</template>
         </el-table-column>
-        <el-table-column label="Created At" min-width="160">
-          <template #default="scope">{{ formatDateTime(scope.row.createdAt) }}</template>
+        <el-table-column label="创建时间" min-width="160">
+          <template #default="{ row }">{{ formatDateTime(row.createdAt) }}</template>
         </el-table-column>
-        <el-table-column label="Actions" min-width="320" fixed="right">
-          <template #default="scope">
-            <el-button link type="primary" @click="viewDetail(scope.row.orderId)">Detail</el-button>
-            <el-button v-if="canConfirm(scope.row)" link type="primary" @click="action(scope.row.orderId, 'confirm')">Confirm</el-button>
-            <el-button v-if="canDeliver(scope.row)" link type="warning" @click="action(scope.row.orderId, 'deliver')">Delivering</el-button>
-            <el-button v-if="canComplete(scope.row)" link type="success" @click="action(scope.row.orderId, 'complete')">Complete</el-button>
-            <el-button v-if="canCancel(scope.row)" link type="danger" @click="action(scope.row.orderId, 'cancel')">Cancel</el-button>
+        <el-table-column label="操作" min-width="320" fixed="right">
+          <template #default="{ row }">
+            <el-button link type="primary" @click="viewDetail(row.orderId)">详情</el-button>
+            <el-button v-if="canConfirm(row)" link type="primary" @click="action(row.orderId, 'confirm')">确认接单</el-button>
+            <el-button v-if="canDeliver(row)" link type="warning" @click="action(row.orderId, 'deliver')">标记配送中</el-button>
+            <el-button v-if="canComplete(row)" link type="success" @click="action(row.orderId, 'complete')">确认完成</el-button>
+            <el-button v-if="canCancel(row)" link type="danger" @click="action(row.orderId, 'cancel')">取消订单</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -75,14 +91,14 @@
 
     <EmptyState
       v-else
-      title="No orders yet"
-      :description="role === 'buyer' ? 'You have not created any order yet. Browse public items first.' : 'No buyer has placed an order for your items yet.'"
+      title="还没有订单"
+      :description="role === 'buyer' ? '你还没有下单记录，先去逛逛商品列表吧。' : '暂时还没有买家下单，你发布的商品成交后会显示在这里。'"
     >
-      <el-button v-if="role === 'buyer'" type="primary" @click="router.push('/items')">Browse items</el-button>
+      <el-button v-if="role === 'buyer'" type="primary" @click="router.push('/items')">去浏览商品</el-button>
     </EmptyState>
   </section>
 
-  <el-drawer v-model="drawerVisible" size="460px" title="Order Detail">
+  <el-drawer v-model="drawerVisible" size="460px" title="订单详情">
     <div v-if="detailLoading" class="drawer-skeleton">
       <el-skeleton animated :rows="8" />
     </div>
@@ -92,20 +108,24 @@
         type="warning"
         :closable="false"
         show-icon
-        title="This is a seeded demo order, useful for showing pending confirm, awaiting delivery, delivering, and completed states."
+        title="这是一条演示订单，适合用于展示待确认、待配送、配送中和已完成等状态。"
         class="detail-alert"
       />
       <el-descriptions :column="1" border>
-        <el-descriptions-item label="Order No.">{{ currentOrder.orderNo || '--' }}</el-descriptions-item>
-        <el-descriptions-item label="Item">{{ currentOrder.items?.[0]?.itemTitleSnapshot || '--' }}</el-descriptions-item>
-        <el-descriptions-item label="Status">{{ orderStatusLabel(currentOrder.orderStatus) }}</el-descriptions-item>
-        <el-descriptions-item label="Amount">{{ formatPrice(currentOrder.totalAmount) }}</el-descriptions-item>
-        <el-descriptions-item label="Receiver">{{ currentOrder.receiverName || '--' }}</el-descriptions-item>
-        <el-descriptions-item label="Phone">{{ currentOrder.receiverPhone || '--' }}</el-descriptions-item>
-        <el-descriptions-item label="Delivery">{{ deliveryTypeLabel(currentOrder.deliveryType) }}</el-descriptions-item>
-        <el-descriptions-item label="Address">{{ currentOrder.deliveryAddress || '--' }}</el-descriptions-item>
-        <el-descriptions-item label="Buyer Note">{{ currentOrder.buyerRemark || '--' }}</el-descriptions-item>
-        <el-descriptions-item label="Created At">{{ formatDateTime(currentOrder.createdAt) }}</el-descriptions-item>
+        <el-descriptions-item label="订单号">{{ currentOrder.orderNo || '--' }}</el-descriptions-item>
+        <el-descriptions-item label="商品">{{ currentOrder.items?.[0]?.itemTitleSnapshot || '--' }}</el-descriptions-item>
+        <el-descriptions-item label="订单状态">
+          {{ getOrderStatusLabel(currentOrder.orderStatus) }}
+        </el-descriptions-item>
+        <el-descriptions-item label="金额">{{ formatPrice(currentOrder.totalAmount) }}</el-descriptions-item>
+        <el-descriptions-item label="收货人">{{ currentOrder.receiverName || '--' }}</el-descriptions-item>
+        <el-descriptions-item label="联系电话">{{ currentOrder.receiverPhone || '--' }}</el-descriptions-item>
+        <el-descriptions-item label="配送方式">
+          {{ getDeliveryTypeLabel(currentOrder.deliveryType) }}
+        </el-descriptions-item>
+        <el-descriptions-item label="配送地址">{{ currentOrder.deliveryAddress || '--' }}</el-descriptions-item>
+        <el-descriptions-item label="买家备注">{{ currentOrder.buyerRemark || '--' }}</el-descriptions-item>
+        <el-descriptions-item label="创建时间">{{ formatDateTime(currentOrder.createdAt) }}</el-descriptions-item>
       </el-descriptions>
     </template>
   </el-drawer>
@@ -119,10 +139,11 @@ import EmptyState from '@/components/common/EmptyState.vue';
 import SectionHeading from '@/components/common/SectionHeading.vue';
 import { publicApi } from '@/api/public';
 import { userApi } from '@/api/user';
-import { formatDateTime, formatPrice, labelize } from '@/utils/format';
+import { formatDateTime, formatPrice } from '@/utils/format';
+import { getDeliveryTypeLabel, getOrderStatusLabel, getOrderStatusTagType } from '@/utils/status';
 
 const router = useRouter();
-const role = ref('buyer');
+const role = ref<'buyer' | 'seller'>('buyer');
 const records = ref<any[]>([]);
 const isLoading = ref(false);
 const page = ref(1);
@@ -137,9 +158,17 @@ const pendingStatuses = ['pending_confirm', 'awaiting_delivery', 'delivering'];
 const pendingCount = computed(() => records.value.filter((item) => pendingStatuses.includes(String(item.orderStatus))).length);
 const completedCount = computed(() => records.value.filter((item) => String(item.orderStatus) === 'completed').length);
 
-onMounted(async () => {
-  await Promise.all([fetchOrders(), fetchDemoStatus()]);
+onMounted(() => {
+  initialize();
 });
+
+async function initialize() {
+  try {
+    await Promise.all([fetchOrders(), fetchDemoStatus()]);
+  } catch {
+    // errors are surfaced inside fetchers
+  }
+}
 
 async function fetchDemoStatus() {
   try {
@@ -155,19 +184,32 @@ async function fetchOrders() {
     const data = await userApi.getOrders({ role: role.value, page: page.value, size });
     records.value = data.records || [];
     total.value = Number(data.total || 0);
+  } catch (error: any) {
+    records.value = [];
+    total.value = 0;
+    ElMessage.error(error?.response?.data?.message || '订单列表加载失败，请刷新后重试');
+    throw error;
   } finally {
     isLoading.value = false;
   }
 }
 
-function handleRoleChange() {
+async function handleRoleChange() {
   page.value = 1;
-  fetchOrders();
+  try {
+    await fetchOrders();
+  } catch {
+    // handled in fetchOrders
+  }
 }
 
-function handlePageChange(nextPage: number) {
+async function handlePageChange(nextPage: number) {
   page.value = nextPage;
-  fetchOrders();
+  try {
+    await fetchOrders();
+  } catch {
+    // handled in fetchOrders
+  }
 }
 
 async function viewDetail(orderId: number) {
@@ -175,24 +217,44 @@ async function viewDetail(orderId: number) {
   detailLoading.value = true;
   try {
     currentOrder.value = await userApi.getOrderDetail(orderId);
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || '订单详情加载失败');
+    drawerVisible.value = false;
   } finally {
     detailLoading.value = false;
   }
 }
 
 async function action(orderId: number, type: 'confirm' | 'deliver' | 'complete' | 'cancel') {
-  const note = type === 'cancel' ? 'User cancelled the order from the frontend page' : 'Frontend page action';
+  const noteMap: Record<typeof type, string> = {
+    confirm: '前台卖家确认接单',
+    deliver: '前台卖家标记配送中',
+    complete: '前台买家确认完成',
+    cancel: '前台用户取消订单'
+  };
+
   if (type === 'cancel') {
-    await ElMessageBox.confirm('Confirm cancelling this order?', 'Cancel order', { type: 'warning' });
+    await ElMessageBox.confirm('确认取消这笔订单吗？', '取消订单', { type: 'warning' });
   }
-  if (type === 'confirm') await userApi.confirmOrder(orderId, { actionNote: note });
-  if (type === 'deliver') await userApi.deliverOrder(orderId, { actionNote: note });
-  if (type === 'complete') await userApi.completeOrder(orderId, { actionNote: note });
-  if (type === 'cancel') await userApi.cancelOrder(orderId, { actionNote: note, cancelReason: note });
-  ElMessage.success('Order status updated');
-  await fetchOrders();
-  if (drawerVisible.value && currentOrder.value?.orderId === orderId) {
-    await viewDetail(orderId);
+
+  if (type === 'confirm') await userApi.confirmOrder(orderId, { actionNote: noteMap.confirm });
+  if (type === 'deliver') await userApi.deliverOrder(orderId, { actionNote: noteMap.deliver });
+  if (type === 'complete') await userApi.completeOrder(orderId, { actionNote: noteMap.complete });
+  if (type === 'cancel') {
+    await userApi.cancelOrder(orderId, {
+      actionNote: noteMap.cancel,
+      cancelReason: '用户主动取消订单'
+    });
+  }
+
+  ElMessage.success('订单状态已更新');
+  try {
+    await fetchOrders();
+    if (drawerVisible.value && currentOrder.value?.orderId === orderId) {
+      await viewDetail(orderId);
+    }
+  } catch {
+    // handled in fetchOrders/viewDetail
   }
 }
 
@@ -209,40 +271,11 @@ function canComplete(row: any) {
 }
 
 function canCancel(row: any) {
-  return ['pending_confirm', 'awaiting_delivery', 'delivering'].includes(String(row.orderStatus));
+  return ['pending_confirm', 'awaiting_delivery'].includes(String(row.orderStatus));
 }
 
 function showDemoTag(row: any) {
   return String(row?.orderNo || '').startsWith('DEMO');
-}
-
-function orderStatusLabel(status?: string) {
-  const map: Record<string, string> = {
-    pending_confirm: 'Pending Confirm',
-    awaiting_delivery: 'Awaiting Delivery',
-    delivering: 'Delivering',
-    completed: 'Completed',
-    cancelled: 'Cancelled',
-    closed: 'Closed'
-  };
-  return map[String(status)] || labelize(status, '--');
-}
-
-function orderStatusType(status?: string) {
-  const value = String(status);
-  if (value === 'completed') return 'success';
-  if (['cancelled', 'closed'].includes(value)) return 'info';
-  if (value === 'delivering') return 'warning';
-  return 'primary';
-}
-
-function deliveryTypeLabel(value?: string) {
-  const map: Record<string, string> = {
-    dorm_delivery: 'Dorm Delivery',
-    self_pickup: 'Self Pickup',
-    face_to_face: 'Face to Face'
-  };
-  return map[String(value)] || labelize(value, '--');
 }
 </script>
 
