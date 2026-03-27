@@ -2,10 +2,14 @@
   <div class="login-page">
     <section class="login-card glass-card">
       <div class="hero-grid"></div>
+      <div class="card-actions">
+        <RouterLink class="back-link" to="/">返回前台</RouterLink>
+        <RouterLink class="user-link" to="/login">用户登录</RouterLink>
+      </div>
       <AppLogo to="/admin/login" />
       <div class="copy">
         <div class="app-chip">Admin Access</div>
-        <h1>后台入口，先过验证码再进控制台。</h1>
+        <h1>后台入口，先过验证码再进入控制台。</h1>
         <p>适用于系统管理员、审核员和运营人员。验证码实时生成，登录失败后会自动刷新。</p>
       </div>
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top" @submit.prevent>
@@ -17,7 +21,7 @@
         </el-form-item>
         <div class="captcha-row">
           <el-form-item label="验证码" prop="captcha">
-            <el-input v-model="form.captcha" maxlength="4" placeholder="请输入图中字符" @keyup.enter="handleLogin" />
+            <el-input v-model="form.captcha" maxlength="4" placeholder="请输入图片中的字符" @keyup.enter="handleLogin" />
           </el-form-item>
           <div class="captcha-panel">
             <button class="captcha-box" type="button" :disabled="captchaLoading" @click="fetchCaptcha">
@@ -40,7 +44,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue';
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus';
-import { useRouter } from 'vue-router';
+import { RouterLink, useRouter } from 'vue-router';
 import AppLogo from '@/components/common/AppLogo.vue';
 import { adminApi } from '@/api/admin';
 import { useAuthStore } from '@/stores/auth';
@@ -92,7 +96,7 @@ async function handleLogin() {
     const result = await adminApi.login(form);
     authStore.setAdminAuth(result.token, result.adminProfile || null);
     ElMessage.success('后台登录成功');
-    router.push('/admin/dashboard');
+    await router.push('/admin/dashboard');
   } catch {
     await fetchCaptcha();
   } finally {
@@ -122,6 +126,22 @@ onMounted(() => {
   overflow: hidden;
   width: min(560px, 100%);
   padding: 34px;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.back-link,
+.user-link {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: rgba(255, 255, 255, 0.72);
+  font-size: 14px;
 }
 
 .hero-grid {
@@ -217,6 +237,11 @@ p {
 }
 
 @media (max-width: 640px) {
+  .card-actions,
+  .tips-bar {
+    flex-direction: column;
+  }
+
   .captcha-row {
     grid-template-columns: 1fr;
   }
@@ -224,10 +249,6 @@ p {
   .captcha-panel {
     grid-template-columns: 1fr auto;
     align-items: center;
-  }
-
-  .tips-bar {
-    flex-direction: column;
   }
 }
 </style>
