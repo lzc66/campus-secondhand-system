@@ -15,13 +15,16 @@ import com.campus.secondhand.vo.admin.SmtpSettingsResponse;
 import com.campus.secondhand.vo.admin.SmtpTestResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.http.HttpStatus;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -39,6 +42,8 @@ public class SmtpSettingsServiceImpl implements SmtpSettingsService {
     private static final String KEY_AUTH_ENABLED = "smtp_auth_enabled";
     private static final String KEY_STARTTLS_ENABLED = "smtp_starttls_enabled";
     private static final String KEY_SSL_ENABLED = "smtp_ssl_enabled";
+    private static final String SYSTEM_MAIL_DISPLAY_NAME = "校园二手交易管理系统";
+    private static final String MAIL_SUBJECT_PREFIX = "【校园二手交易管理系统】";
 
     private final SystemSettingMapper systemSettingMapper;
     private final AdminOperationLogMapper adminOperationLogMapper;
@@ -123,16 +128,12 @@ public class SmtpSettingsServiceImpl implements SmtpSettingsService {
             throw new BusinessException(40046, HttpStatus.BAD_REQUEST, "SMTP configuration is incomplete or disabled");
         }
 
+        String subject = normalizeSubject(request.subject());
         try {
             JavaMailSender mailSender = smtpMailSenderFactory.createSender(settings);
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(request.toEmail());
-            message.setFrom(settings.fromAddress());
-            message.setSubject(request.subject());
-            message.setText(request.content());
-            mailSender.send(message);
+            sendUtf8Mail(mailSender, settings.fromAddress(), request.toEmail(), subject, request.content());
             logOperation(principal.getAdminId(), 0L, "other", "{\"to\":\"" + request.toEmail() + "\"}", ipAddress);
-            return new SmtpTestResponse(request.toEmail(), request.subject(), LocalDateTime.now());
+            return new SmtpTestResponse(request.toEmail(), subject, LocalDateTime.now());
         } catch (Exception ex) {
             throw new BusinessException(50041, HttpStatus.INTERNAL_SERVER_ERROR, "SMTP test email failed: " + ex.getMessage());
         }
@@ -278,6 +279,31 @@ public class SmtpSettingsServiceImpl implements SmtpSettingsService {
         } catch (JsonProcessingException ex) {
             throw new IllegalStateException("Failed to serialize SMTP operation detail", ex);
         }
+    }
+
+    private void sendUtf8Mail(JavaMailSender mailSender,
+                              String fromAddress,
+                              String toAddress,
+                              String subject,
+                              String content) throws Exception {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, false, StandardCharsets.UTF_8.name());
+        helper.setTo(toAddress);
+        helper.setFrom(new InternetAddress(fromAddress, SYSTEM_MAIL_DISPLAY_NAME, StandardCharsets.UTF_8.name()));
+        helper.setSubject(subject);
+        helper.setText(content, false);
+        mailSender.send(mimeMessage);
+    }
+
+    private String normalizeSubject(String subject) {
+        String normalized = trimToNull(subject);
+        if (!StringUtils.hasText(normalized)) {
+            return MAIL_SUBJECT_PREFIX + "SMTP 测试邮件";
+        }
+        if (normalized.startsWith(MAIL_SUBJECT_PREFIX)) {
+            return normalized;
+        }
+        return MAIL_SUBJECT_PREFIX + normalized;
     }
 
     private String trimToNull(String value) {

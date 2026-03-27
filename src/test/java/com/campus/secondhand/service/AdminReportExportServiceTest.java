@@ -42,9 +42,9 @@ class AdminReportExportServiceTest {
 
         assertTrue(report.fileName().startsWith("dashboard-overview-"));
         assertTrue(report.fileName().endsWith(".csv"));
-        assertTrue(csv.startsWith("\uFEFFmetric,value"));
-        assertTrue(csv.contains("totalUsers,10"));
-        assertTrue(csv.contains("todayCompletedAmount,88.8"));
+        assertTrue(csv.startsWith("\uFEFF模块,指标,数值"));
+        assertTrue(csv.contains("用户,累计用户数,10"));
+        assertTrue(csv.contains("今日成交,成交金额,88.8"));
     }
 
     @Test
@@ -61,9 +61,9 @@ class AdminReportExportServiceTest {
         String categoryCsv = new String(categoryReport.content(), StandardCharsets.UTF_8);
         String keywordCsv = new String(keywordReport.content(), StandardCharsets.UTF_8);
 
-        assertTrue(categoryCsv.contains("categoryId,categoryName,soldQuantity,completedOrderCount,completedAmount"));
+        assertTrue(categoryCsv.contains("分类ID,分类名称,销量,完成订单数,成交金额"));
         assertTrue(categoryCsv.contains("1,数码设备,3,2,188.8"));
-        assertTrue(keywordCsv.contains("keyword,searchCount,categoryId,categoryName"));
+        assertTrue(keywordCsv.contains("关键词,搜索次数,关联分类ID,关联分类名称"));
         assertTrue(keywordCsv.contains("\"ipad, 11\"\"\""));
     }
 
@@ -81,9 +81,9 @@ class AdminReportExportServiceTest {
         String orderCsv = new String(orderReport.content(), StandardCharsets.UTF_8);
         String userCsv = new String(userReport.content(), StandardCharsets.UTF_8);
 
-        assertTrue(orderCsv.contains("date,createdOrderCount,completedOrderCount,cancelledOrderCount,completedAmount"));
+        assertTrue(orderCsv.contains("日期,创建订单数,完成订单数,取消订单数,完成金额"));
         assertTrue(orderCsv.contains("2026-03-25,3,2,1,120.5"));
-        assertTrue(userCsv.contains("date,newUserCount,cumulativeUserCount"));
+        assertTrue(userCsv.contains("日期,新增用户数,累计用户数"));
         assertTrue(userCsv.contains("2026-03-25,2,18"));
     }
 

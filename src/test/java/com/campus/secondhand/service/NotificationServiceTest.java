@@ -9,17 +9,22 @@ import com.campus.secondhand.enums.UserAccountStatus;
 import com.campus.secondhand.mapper.NotificationMapper;
 import com.campus.secondhand.mapper.UserMapper;
 import com.campus.secondhand.service.impl.NotificationServiceImpl;
+import jakarta.mail.Session;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
@@ -55,22 +60,31 @@ class NotificationServiceTest {
     }
 
     @Test
-    void shouldMarkEmailNotificationSentWhenSmtpConfigured() {
+    void shouldMarkEmailNotificationSentWhenSmtpConfigured() throws Exception {
+        MimeMessage mimeMessage = new MimeMessage(Session.getInstance(new Properties()));
         when(smtpSettingsService.getRuntimeSettings()).thenReturn(new SmtpRuntimeSettings(
                 "smtp.example.com", 587, "mailer@example.com", "secret", "mailer@example.com", true, true, false
         ));
         when(smtpMailSenderFactory.createSender(any())).thenReturn(javaMailSender);
+        when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
         NotificationServiceImpl service = new NotificationServiceImpl(notificationMapper, userMapper, smtpSettingsService, smtpMailSenderFactory);
 
         service.sendRegistrationRejected(RegistrationApplication.builder()
                 .applicationId(5L)
                 .email("alice@campus.local")
+                .reviewRemark("学生证信息清晰，请重新提交后等待复核")
                 .build(), 1L);
 
-        verify(javaMailSender).send(any(SimpleMailMessage.class));
+        verify(javaMailSender).send(any(MimeMessage.class));
+        assertTrue(String.valueOf(mimeMessage.getDataHandler().getContentType()).toLowerCase().contains("charset=utf-8"));
+        assertEquals("【校园二手交易管理系统】注册审核结果通知", mimeMessage.getSubject());
+        InternetAddress from = (InternetAddress) mimeMessage.getFrom()[0];
+        assertEquals("mailer@example.com", from.getAddress());
+        assertEquals("校园二手交易管理系统", from.getPersonal());
         ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
         verify(notificationMapper).insert(captor.capture());
         assertEquals(NotificationSendStatus.SENT, captor.getValue().getSendStatus());
+        assertTrue(new String(mimeMessage.getInputStream().readAllBytes(), StandardCharsets.UTF_8).contains("审核备注"));
     }
 
     @Test

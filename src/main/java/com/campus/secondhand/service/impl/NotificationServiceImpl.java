@@ -15,15 +15,21 @@ import com.campus.secondhand.service.NotificationService;
 import com.campus.secondhand.service.SmtpMailSenderFactory;
 import com.campus.secondhand.service.SmtpRuntimeSettings;
 import com.campus.secondhand.service.SmtpSettingsService;
-import org.springframework.mail.SimpleMailMessage;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
+
+    private static final String SYSTEM_MAIL_DISPLAY_NAME = "校园二手交易管理系统";
+    private static final String MAIL_SUBJECT_PREFIX = "【校园二手交易管理系统】";
 
     private final NotificationMapper notificationMapper;
     private final UserMapper userMapper;
@@ -62,7 +68,7 @@ public class NotificationServiceImpl implements NotificationService {
                 adminId,
                 NotificationBusinessType.REGISTER_REVIEW,
                 application.getApplicationId(),
-                "注册审核已通过",
+                buildMailSubject("注册审核通过通知"),
                 "你的注册申请已通过审核，现在可以使用学号和密码登录系统。"
         );
     }
@@ -78,7 +84,7 @@ public class NotificationServiceImpl implements NotificationService {
                 adminId,
                 NotificationBusinessType.REGISTER_REVIEW,
                 application.getApplicationId(),
-                "注册审核未通过",
+                buildMailSubject("注册审核结果通知"),
                 content
         );
     }
@@ -128,12 +134,7 @@ public class NotificationServiceImpl implements NotificationService {
         if (settings != null) {
             try {
                 JavaMailSender mailSender = smtpMailSenderFactory.createSender(settings);
-                SimpleMailMessage message = new SimpleMailMessage();
-                message.setTo(receiverEmail);
-                message.setFrom(settings.fromAddress());
-                message.setSubject(title);
-                message.setText(content);
-                mailSender.send(message);
+                sendUtf8Mail(mailSender, settings.fromAddress(), receiverEmail, title, content);
                 notification.setSendStatus(NotificationSendStatus.SENT);
                 notification.setSentAt(LocalDateTime.now());
             } catch (Exception ex) {
@@ -142,5 +143,23 @@ public class NotificationServiceImpl implements NotificationService {
         }
 
         notificationMapper.insert(notification);
+    }
+
+    private void sendUtf8Mail(JavaMailSender mailSender,
+                              String fromAddress,
+                              String toAddress,
+                              String subject,
+                              String content) throws Exception {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, false, StandardCharsets.UTF_8.name());
+        helper.setTo(toAddress);
+        helper.setFrom(new InternetAddress(fromAddress, SYSTEM_MAIL_DISPLAY_NAME, StandardCharsets.UTF_8.name()));
+        helper.setSubject(subject);
+        helper.setText(content, false);
+        mailSender.send(mimeMessage);
+    }
+
+    private String buildMailSubject(String coreTitle) {
+        return MAIL_SUBJECT_PREFIX + coreTitle;
     }
 }

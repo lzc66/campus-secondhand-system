@@ -36,20 +36,20 @@ public class AdminReportExportServiceImpl implements AdminReportExportService {
     public AdminReportFileResponse exportDashboardOverviewReport() {
         AdminDashboardOverviewResponse overview = adminDashboardService.getOverview();
         List<List<String>> rows = new ArrayList<>();
-        rows.add(List.of("metric", "value"));
-        rows.add(List.of("totalUsers", String.valueOf(overview.totalUsers())));
-        rows.add(List.of("activeUsers", String.valueOf(overview.activeUsers())));
-        rows.add(List.of("pendingRegistrationCount", String.valueOf(overview.pendingRegistrationCount())));
-        rows.add(List.of("totalItems", String.valueOf(overview.totalItems())));
-        rows.add(List.of("onSaleItemCount", String.valueOf(overview.onSaleItemCount())));
-        rows.add(List.of("totalOrders", String.valueOf(overview.totalOrders())));
-        rows.add(List.of("completedOrderCount", String.valueOf(overview.completedOrderCount())));
-        rows.add(List.of("totalWantedPosts", String.valueOf(overview.totalWantedPosts())));
-        rows.add(List.of("publishedAnnouncementCount", String.valueOf(overview.publishedAnnouncementCount())));
-        rows.add(List.of("todayNewUsers", String.valueOf(overview.todayNewUsers())));
-        rows.add(List.of("todayNewItems", String.valueOf(overview.todayNewItems())));
-        rows.add(List.of("todayNewOrders", String.valueOf(overview.todayNewOrders())));
-        rows.add(List.of("todayCompletedAmount", stringifyDecimal(overview.todayCompletedAmount())));
+        rows.add(List.of("模块", "指标", "数值"));
+        rows.add(List.of("用户", "累计用户数", String.valueOf(overview.totalUsers())));
+        rows.add(List.of("用户", "活跃用户数", String.valueOf(overview.activeUsers())));
+        rows.add(List.of("用户", "待审核注册数", String.valueOf(overview.pendingRegistrationCount())));
+        rows.add(List.of("商品", "商品总数", String.valueOf(overview.totalItems())));
+        rows.add(List.of("商品", "在售商品数", String.valueOf(overview.onSaleItemCount())));
+        rows.add(List.of("订单", "订单总数", String.valueOf(overview.totalOrders())));
+        rows.add(List.of("订单", "已完成订单数", String.valueOf(overview.completedOrderCount())));
+        rows.add(List.of("求购", "求购总数", String.valueOf(overview.totalWantedPosts())));
+        rows.add(List.of("公告", "已发布公告数", String.valueOf(overview.publishedAnnouncementCount())));
+        rows.add(List.of("今日新增", "新增用户数", String.valueOf(overview.todayNewUsers())));
+        rows.add(List.of("今日新增", "新增商品数", String.valueOf(overview.todayNewItems())));
+        rows.add(List.of("今日新增", "新增订单数", String.valueOf(overview.todayNewOrders())));
+        rows.add(List.of("今日成交", "成交金额", stringifyDecimal(overview.todayCompletedAmount())));
         return new AdminReportFileResponse(buildFileName("dashboard-overview"), CSV_CONTENT_TYPE, toCsvBytes(rows));
     }
 
@@ -108,7 +108,7 @@ public class AdminReportExportServiceImpl implements AdminReportExportService {
 
     private AdminReportFileResponse buildOrderTrendReport(List<AdminDashboardTrendPointResponse> trends, String filePrefix) {
         List<List<String>> rows = new ArrayList<>();
-        rows.add(List.of("date", "createdOrderCount", "completedOrderCount", "cancelledOrderCount", "completedAmount"));
+        rows.add(List.of("日期", "创建订单数", "完成订单数", "取消订单数", "完成金额"));
         trends.forEach(point -> rows.add(List.of(
                 stringifyDate(point.date()),
                 String.valueOf(point.createdOrderCount()),
@@ -121,7 +121,7 @@ public class AdminReportExportServiceImpl implements AdminReportExportService {
 
     private AdminReportFileResponse buildCategorySalesRankingReport(List<AdminDashboardCategorySalesResponse> ranking, String filePrefix) {
         List<List<String>> rows = new ArrayList<>();
-        rows.add(List.of("categoryId", "categoryName", "soldQuantity", "completedOrderCount", "completedAmount"));
+        rows.add(List.of("分类ID", "分类名称", "销量", "完成订单数", "成交金额"));
         ranking.forEach(item -> rows.add(List.of(
                 stringifyLong(item.categoryId()),
                 nullToEmpty(item.categoryName()),
@@ -134,7 +134,7 @@ public class AdminReportExportServiceImpl implements AdminReportExportService {
 
     private AdminReportFileResponse buildHotSearchKeywordReport(List<AdminDashboardHotKeywordResponse> keywords, String filePrefix) {
         List<List<String>> rows = new ArrayList<>();
-        rows.add(List.of("keyword", "searchCount", "categoryId", "categoryName"));
+        rows.add(List.of("关键词", "搜索次数", "关联分类ID", "关联分类名称"));
         keywords.forEach(item -> rows.add(List.of(
                 nullToEmpty(item.keyword()),
                 String.valueOf(item.searchCount()),
@@ -146,7 +146,7 @@ public class AdminReportExportServiceImpl implements AdminReportExportService {
 
     private AdminReportFileResponse buildUserGrowthTrendReport(List<AdminDashboardUserGrowthResponse> trends, String filePrefix) {
         List<List<String>> rows = new ArrayList<>();
-        rows.add(List.of("date", "newUserCount", "cumulativeUserCount"));
+        rows.add(List.of("日期", "新增用户数", "累计用户数"));
         trends.forEach(item -> rows.add(List.of(
                 stringifyDate(item.date()),
                 String.valueOf(item.newUserCount()),
