@@ -1,116 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="b52fec88-9123-4900-b31f-6642abc27730" name="更改" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/AdminLayout-DqPzpsfc.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/AnnouncementsView-CtbQjVG4.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/AnnouncementsView-DGolSa0y.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/AppLogo-CB5ssjQ1.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/DashboardView-eoYl2Uma.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/EmptyState-mL0UKyEw.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/HomeView-D18oOLoL.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/ItemCard--EBP4CNP.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/ItemDetailView-z9ipkRl8.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/ItemsView-B8LXBcGf.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/ItemsView-BDdeo7AR.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/LoginView-DczHqVm-.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/LoginView-ZLFEoQsb.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/MailSettingsView-Cr-n3cgl.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/MyItemsView-D9C_ClT7.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/MyWantedPostsView-Cwvr2l2X.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/NotificationsView-BJqtht53.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/OrdersView-CSsZuo7a.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/OrdersView-OXoXL2vR.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/ProfileView-wbEllLpG.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/PublicLayout-DqY80kNK.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/PublishItemView-Dg2dJIJX.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/ReceivedCommentsView-DMTVo5Ho.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/RecommendationsView-xvJU-D45.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/RegisterResultView-2ct758hw.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/RegisterView-B1nL7eBi.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/RegistrationsView-CkFkihYo.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/ReportsView-BCu-7s9O.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/ReportsView-N2_MtDYF.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/SectionHeading.vue_vue_type_script_setup_true_lang-heOofXSQ.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/UsersView-Cdd8iPMA.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/WantedPostDetailView-atPTgSuH.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/WantedPostsView-RpkCPaRK.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/admin-DJ35-n9h.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/format-ZxbsngVN.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/http-DxGCXdMj.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/index-DbCI94UO.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/public-0rjnFZVD.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/user-DoF-w9Q0.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/dist/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/utils/download.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/utils/download.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/views/admin/ReportsView.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/admin/ReportsView.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/campus/secondhand/service/impl/AdminReportExportServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/campus/secondhand/service/impl/AdminReportExportServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/campus/secondhand/service/impl/NotificationServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/campus/secondhand/service/impl/NotificationServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/campus/secondhand/service/impl/SmtpMailSenderFactoryImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/campus/secondhand/service/impl/SmtpMailSenderFactoryImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/campus/secondhand/service/impl/SmtpSettingsServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/campus/secondhand/service/impl/SmtpSettingsServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/campus/secondhand/service/AdminReportExportServiceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/campus/secondhand/service/AdminReportExportServiceTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/campus/secondhand/service/NotificationServiceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/campus/secondhand/service/NotificationServiceTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/campus/secondhand/service/impl/AdminReportExportServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/campus/secondhand/service/impl/AdminReportExportServiceImpl.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/campus/secondhand/service/impl/NotificationServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/campus/secondhand/service/impl/NotificationServiceImpl.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/campus/secondhand/service/impl/SmtpMailSenderFactoryImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/campus/secondhand/service/impl/SmtpMailSenderFactoryImpl.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/campus/secondhand/service/impl/SmtpSettingsServiceImpl$SettingBundle.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/campus/secondhand/service/impl/SmtpSettingsServiceImpl$SettingBundle.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/campus/secondhand/service/impl/SmtpSettingsServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/campus/secondhand/service/impl/SmtpSettingsServiceImpl.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/secondhand-backend-0.0.1-SNAPSHOT.jar" beforeDir="false" afterPath="$PROJECT_DIR$/target/secondhand-backend-0.0.1-SNAPSHOT.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/secondhand-backend-0.0.1-SNAPSHOT.jar.original" beforeDir="false" afterPath="$PROJECT_DIR$/target/secondhand-backend-0.0.1-SNAPSHOT.jar.original" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.controller.admin.AdminInitControllerTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.controller.admin.AdminInitControllerTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.security.JwtTokenProviderTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.security.JwtTokenProviderTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.AdminAnnouncementServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.AdminAnnouncementServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.AdminAuthServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.AdminAuthServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.AdminDashboardServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.AdminDashboardServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.AdminItemManagementServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.AdminItemManagementServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.AdminOrderManagementServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.AdminOrderManagementServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.AdminReportExportServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.AdminReportExportServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.AdminUserManagementServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.AdminUserManagementServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.ItemCommentServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.ItemCommentServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.LocalFileStorageServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.LocalFileStorageServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.LoginCaptchaServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.LoginCaptchaServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.NotificationServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.NotificationServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.PublicAnnouncementServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.PublicAnnouncementServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.PublicItemServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.PublicItemServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.PublicRegistrationServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.PublicRegistrationServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.PublicWantedPostServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.PublicWantedPostServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.RecommendationBehaviorServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.RecommendationBehaviorServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.RegistrationReviewServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.RegistrationReviewServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.SystemInitServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.SystemInitServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.UserAuthServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.UserAuthServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.UserItemServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.UserItemServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.UserNotificationCenterServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.UserNotificationCenterServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.UserOrderServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.UserOrderServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.UserProfileServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.UserProfileServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.UserRecommendationServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.UserRecommendationServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.UserWantedPostServiceTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.campus.secondhand.service.UserWantedPostServiceTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.controller.admin.AdminInitControllerTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.controller.admin.AdminInitControllerTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.security.JwtTokenProviderTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.security.JwtTokenProviderTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.AdminAnnouncementServiceTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.AdminAnnouncementServiceTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.AdminAuthServiceTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.AdminAuthServiceTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.AdminDashboardServiceTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.AdminDashboardServiceTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.AdminItemManagementServiceTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.AdminItemManagementServiceTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.AdminOrderManagementServiceTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.AdminOrderManagementServiceTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.AdminReportExportServiceTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.AdminReportExportServiceTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.ItemCommentServiceTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.ItemCommentServiceTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.LocalFileStorageServiceTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.LocalFileStorageServiceTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.NotificationServiceTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.NotificationServiceTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.PublicItemServiceTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.PublicItemServiceTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.PublicRegistrationServiceTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.PublicRegistrationServiceTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.PublicWantedPostServiceTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.PublicWantedPostServiceTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.RegistrationReviewServiceTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.RegistrationReviewServiceTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.SystemInitServiceTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.SystemInitServiceTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.UserAuthServiceTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.UserAuthServiceTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.UserItemServiceTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.UserItemServiceTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.UserNotificationCenterServiceTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.UserNotificationCenterServiceTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.UserOrderServiceTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.UserOrderServiceTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.UserProfileServiceTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.UserProfileServiceTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.UserRecommendationServiceTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.UserRecommendationServiceTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.UserWantedPostServiceTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.campus.secondhand.service.UserWantedPostServiceTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/com/campus/secondhand/service/AdminReportExportServiceTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/campus/secondhand/service/AdminReportExportServiceTest.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/com/campus/secondhand/service/NotificationServiceTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/campus/secondhand/service/NotificationServiceTest.class" afterDir="false" />
-    </list>
+    <list default="true" id="b52fec88-9123-4900-b31f-6642abc27730" name="更改" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -165,6 +56,7 @@
       <workItem from="1774504452995" duration="3972000" />
       <workItem from="1774522422770" duration="1998000" />
       <workItem from="1774582026363" duration="1627000" />
+      <workItem from="1774618722440" duration="627000" />
     </task>
     <servers />
   </component>
