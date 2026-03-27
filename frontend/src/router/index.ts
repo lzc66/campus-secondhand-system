@@ -15,30 +15,26 @@ const router = createRouter({
         { path: 'wanted-posts/:id', name: 'wanted-post-detail', component: () => import('@/views/public/WantedPostDetailView.vue') },
         { path: 'announcements', name: 'announcements', component: () => import('@/views/public/AnnouncementsView.vue') },
         { path: 'register', name: 'register', component: () => import('@/views/public/RegisterView.vue') },
-        { path: 'register-result', name: 'register-result', component: () => import('@/views/public/RegisterResultView.vue') }
+        { path: 'register-result', name: 'register-result', component: () => import('@/views/public/RegisterResultView.vue') },
+        { path: 'user/profile', name: 'user-profile', component: () => import('@/views/user/ProfileView.vue'), meta: { requiresUser: true } },
+        { path: 'user/publish', name: 'publish-item', component: () => import('@/views/user/PublishItemView.vue'), meta: { requiresUser: true } },
+        { path: 'user/my-items', name: 'my-items', component: () => import('@/views/user/MyItemsView.vue'), meta: { requiresUser: true } },
+        { path: 'user/orders', name: 'orders', component: () => import('@/views/user/OrdersView.vue'), meta: { requiresUser: true } },
+        { path: 'user/notifications', name: 'notifications', component: () => import('@/views/user/NotificationsView.vue'), meta: { requiresUser: true } },
+        { path: 'user/recommendations', name: 'recommendations', component: () => import('@/views/user/RecommendationsView.vue'), meta: { requiresUser: true } },
+        { path: 'user/comments', name: 'received-comments', component: () => import('@/views/user/ReceivedCommentsView.vue'), meta: { requiresUser: true } },
+        { path: 'user/wanted-posts', name: 'my-wanted-posts', component: () => import('@/views/user/MyWantedPostsView.vue'), meta: { requiresUser: true } }
       ]
+    },
+    {
+      path: '/user',
+      redirect: '/user/profile'
     },
     {
       path: '/login',
       name: 'user-login',
       component: () => import('@/views/user/LoginView.vue'),
       meta: { guestOnly: true }
-    },
-    {
-      path: '/user',
-      component: () => import('@/layouts/PortalLayout.vue'),
-      meta: { requiresUser: true },
-      children: [
-        { path: '', redirect: '/user/profile' },
-        { path: 'profile', name: 'user-profile', component: () => import('@/views/user/ProfileView.vue') },
-        { path: 'publish', name: 'publish-item', component: () => import('@/views/user/PublishItemView.vue') },
-        { path: 'my-items', name: 'my-items', component: () => import('@/views/user/MyItemsView.vue') },
-        { path: 'orders', name: 'orders', component: () => import('@/views/user/OrdersView.vue') },
-        { path: 'notifications', name: 'notifications', component: () => import('@/views/user/NotificationsView.vue') },
-        { path: 'recommendations', name: 'recommendations', component: () => import('@/views/user/RecommendationsView.vue') },
-        { path: 'comments', name: 'received-comments', component: () => import('@/views/user/ReceivedCommentsView.vue') },
-        { path: 'wanted-posts', name: 'my-wanted-posts', component: () => import('@/views/user/MyWantedPostsView.vue') }
-      ]
     },
     {
       path: '/admin/login',
@@ -77,7 +73,7 @@ router.beforeEach((to) => {
     return '/admin/login';
   }
   if (to.meta.guestOnly && authStore.isUserLoggedIn) {
-    return '/user/profile';
+    return '/';
   }
   if (to.meta.guestOnlyAdmin && authStore.isAdminLoggedIn) {
     return '/admin/dashboard';

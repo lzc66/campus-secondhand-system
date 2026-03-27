@@ -3,11 +3,15 @@
     <section class="login-card glass-card">
       <div class="hero-orbit hero-orbit-left"></div>
       <div class="hero-orbit hero-orbit-right"></div>
+      <div class="card-actions">
+        <RouterLink class="back-link" to="/">返回前台</RouterLink>
+        <RouterLink class="admin-link" to="/admin/login">进入后台入口</RouterLink>
+      </div>
       <AppLogo />
       <div class="copy">
-        <div class="app-chip">Student Access</div>
-        <h1>登录后，开始你的校园交易闭环。</h1>
-        <p>请输入学号、密码和验证码。验证码每次校验后都会失效，点击图片可立即刷新。</p>
+        <div class="app-chip">User Login</div>
+        <h1>登录后，继续你的校园二手交易。</h1>
+        <p>请输入学号、密码和验证码。登录成功后会回到前台首页，右上角将显示你的登录信息与用户菜单。</p>
       </div>
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top" @submit.prevent>
         <el-form-item label="学号" prop="studentNo">
@@ -18,7 +22,7 @@
         </el-form-item>
         <div class="captcha-row">
           <el-form-item label="验证码" prop="captcha">
-            <el-input v-model="form.captcha" maxlength="4" placeholder="请输入图中字符" @keyup.enter="handleLogin" />
+            <el-input v-model="form.captcha" maxlength="4" placeholder="请输入图片中的字符" @keyup.enter="handleLogin" />
           </el-form-item>
           <div class="captcha-panel">
             <button class="captcha-box" type="button" :disabled="captchaLoading" @click="fetchCaptcha">
@@ -30,15 +34,15 @@
             </button>
           </div>
         </div>
-        <el-button type="primary" class="submit-btn" :loading="submitting" @click="handleLogin">登录</el-button>
+        <el-button type="primary" class="submit-btn" :loading="submitting" @click="handleLogin">用户登录</el-button>
       </el-form>
       <div class="tips-bar">
         <span>验证码有效期 3 分钟</span>
-        <span>输入错误后请重新获取</span>
+        <span>验证码校验后即失效，输入错误会自动刷新</span>
       </div>
       <div class="links">
-        <RouterLink to="/register">没有账号，去申请注册</RouterLink>
-        <RouterLink to="/admin/login">进入后台登录</RouterLink>
+        <RouterLink to="/register">没有账号？先提交注册申请</RouterLink>
+        <RouterLink to="/items">先去浏览商品</RouterLink>
       </div>
     </section>
   </div>
@@ -99,10 +103,9 @@ async function handleLogin() {
     const result = await userApi.login(form);
     authStore.setUserAuth(result.token, result.userProfile || null);
     ElMessage.success('登录成功');
-    router.push('/user/profile');
-  } catch (error) {
+    await router.push('/');
+  } catch {
     await fetchCaptcha();
-    throw error;
   } finally {
     submitting.value = false;
   }
@@ -130,6 +133,26 @@ onMounted(() => {
   overflow: hidden;
   width: min(580px, 100%);
   padding: 34px;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.back-link,
+.admin-link {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: rgba(255, 255, 255, 0.72);
+  font-size: 14px;
+}
+
+.admin-link {
+  color: var(--brand);
 }
 
 .hero-orbit {
@@ -215,7 +238,7 @@ p {
   justify-self: end;
   border: none;
   background: transparent;
-  color: var(--brand-accent, #d5752a);
+  color: var(--accent);
   font-weight: 600;
   cursor: pointer;
 }
@@ -246,6 +269,12 @@ p {
 }
 
 @media (max-width: 640px) {
+  .card-actions,
+  .tips-bar,
+  .links {
+    flex-direction: column;
+  }
+
   .captcha-row {
     grid-template-columns: 1fr;
   }
@@ -253,11 +282,6 @@ p {
   .captcha-panel {
     grid-template-columns: 1fr auto;
     align-items: center;
-  }
-
-  .tips-bar,
-  .links {
-    flex-direction: column;
   }
 }
 </style>
