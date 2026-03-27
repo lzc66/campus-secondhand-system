@@ -1,1 +1,0 @@
-import{W as i}from"./index-QypBuPzl.js";function f(r,t="--"){return r?i(r).format("YYYY-MM-DD HH:mm"):t}function e(r,t="--"){return r?i(r).format("YYYY-MM-DD"):t}function a(r,t="--"){return r==null||r===""?t:`¥${Number(r).toFixed(2)}`}function m(r,t="--"){return r?r.split("_").map(n=>n.charAt(0).toUpperCase()+n.slice(1)).join(" "):t}export{f as a,e as b,a as f,m as l};
