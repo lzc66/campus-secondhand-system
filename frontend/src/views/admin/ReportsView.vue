@@ -151,7 +151,7 @@ async function download(report: (typeof reports)[number]) {
   }
   activeExportKey.value = report.key;
   try {
-    await downloadFile(buildUrl(report), authStore.adminToken);
+    await downloadFile(buildUrl(report), authStore.adminToken, report.filename);
     ElMessage.success('报表已开始下载');
   } catch {
     ElMessage.error('报表导出失败，请稍后重试');
