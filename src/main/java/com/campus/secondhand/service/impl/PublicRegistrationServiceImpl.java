@@ -44,13 +44,17 @@ public class PublicRegistrationServiceImpl implements PublicRegistrationService 
     @Override
     @Transactional
     public RegistrationApplicationSubmitResponse submit(RegistrationApplicationSubmitRequest request) {
-        if (registrationApplicationMapper.selectPendingByStudentNo(request.studentNo()) != null) {
+        // 查重与落库统一使用 trim/小写化后的值,避免 " 20250001 " 等变体绕过重复申请校验
+        String studentNo = request.studentNo().trim();
+        String email = request.email().trim().toLowerCase(Locale.ROOT);
+
+        if (registrationApplicationMapper.selectPendingByStudentNo(studentNo) != null) {
             throw new BusinessException(40910, HttpStatus.CONFLICT, "There is already a pending application for this student number");
         }
-        if (userMapper.selectByStudentNo(request.studentNo()) != null) {
+        if (userMapper.selectByStudentNo(studentNo) != null) {
             throw new BusinessException(40911, HttpStatus.CONFLICT, "Student number has already been registered");
         }
-        if (userMapper.selectByEmail(request.email()) != null) {
+        if (userMapper.selectByEmail(email) != null) {
             throw new BusinessException(40912, HttpStatus.CONFLICT, "Email has already been registered");
         }
 
@@ -58,13 +62,19 @@ public class PublicRegistrationServiceImpl implements PublicRegistrationService 
         if (!"image".equalsIgnoreCase(studentCard.getFileCategory())) {
             throw new BusinessException(40013, HttpStatus.BAD_REQUEST, "studentCardFileId must reference an image file");
         }
+        // 校验文件归属:必须是由匿名访客(guest)上传的学生证目录文件,防止用自增 file_id 枚举盗用他人图片
+        if (!"guest".equalsIgnoreCase(studentCard.getUploaderRole())
+                || studentCard.getFileKey() == null
+                || !studentCard.getFileKey().startsWith("student-cards/")) {
+            throw new BusinessException(40015, HttpStatus.BAD_REQUEST, "studentCardFileId must reference your own uploaded student card");
+        }
 
         RegistrationApplication application = RegistrationApplication.builder()
                 .applicationNo(generateApplicationNo())
-                .studentNo(request.studentNo().trim())
+                .studentNo(studentNo)
                 .realName(request.realName().trim())
                 .gender(parseGender(request.gender()))
-                .email(request.email().trim().toLowerCase(Locale.ROOT))
+                .email(email)
                 .phone(trimToNull(request.phone()))
                 .passwordHash(passwordEncoder.encode(request.password()))
                 .collegeName(request.collegeName().trim())

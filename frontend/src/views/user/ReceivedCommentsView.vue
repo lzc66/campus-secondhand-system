@@ -16,7 +16,10 @@
   </section>
   <el-dialog v-model="replyVisible" title="回复评论" width="520px">
     <el-input v-model="replyContent" type="textarea" :rows="4" />
-    <template #footer><el-button @click="replyVisible = false">取消</el-button><el-button type="primary" @click="submitReply">发送回复</el-button></template>
+    <template #footer
+      ><el-button @click="replyVisible = false">取消</el-button
+      ><el-button type="primary" @click="submitReply">发送回复</el-button></template
+    >
   </el-dialog>
 </template>
 
@@ -26,17 +29,51 @@ import { ElMessage } from 'element-plus';
 import SectionHeading from '@/components/common/SectionHeading.vue';
 import { userApi } from '@/api/user';
 import { formatDateTime } from '@/utils/format';
-const records = ref<any[]>([]); const replyVisible = ref(false); const replyContent = ref(''); const currentCommentId = ref<number | null>(null);
+const records = ref<any[]>([]);
+const replyVisible = ref(false);
+const replyContent = ref('');
+const currentCommentId = ref<number | null>(null);
 onMounted(fetchComments);
-async function fetchComments() { const data = await userApi.getReceivedComments({ page: 1, size: 50 }); records.value = data.records || []; }
-function openReply(item: any) { currentCommentId.value = item.commentId; replyVisible.value = true; }
-async function submitReply() { if (!currentCommentId.value) return; await userApi.replyComment(currentCommentId.value, { content: replyContent.value }); ElMessage.success('回复已发送'); replyVisible.value = false; replyContent.value = ''; fetchComments(); }
+async function fetchComments() {
+  const data = await userApi.getReceivedComments({ page: 1, size: 50 });
+  records.value = data.records || [];
+}
+function openReply(item: any) {
+  currentCommentId.value = item.commentId;
+  replyVisible.value = true;
+}
+async function submitReply() {
+  if (!currentCommentId.value) return;
+  await userApi.replyComment(currentCommentId.value, { content: replyContent.value });
+  ElMessage.success('回复已发送');
+  replyVisible.value = false;
+  replyContent.value = '';
+  fetchComments();
+}
 </script>
 
 <style scoped>
-.panel { padding: 24px; }
-.comment-list { display: grid; gap: 12px; }
-.comment-row { padding: 18px; display: flex; justify-content: space-between; gap: 18px; }
-.comment-row p { margin: 10px 0 0; color: var(--text-soft); }
-.comment-side { display: grid; justify-items: end; gap: 10px; color: var(--text-soft); }
+.panel {
+  padding: 24px;
+}
+.comment-list {
+  display: grid;
+  gap: 12px;
+}
+.comment-row {
+  padding: 18px;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+}
+.comment-row p {
+  margin: 10px 0 0;
+  color: var(--text-soft);
+}
+.comment-side {
+  display: grid;
+  justify-items: end;
+  gap: 10px;
+  color: var(--text-soft);
+}
 </style>

@@ -1,6 +1,7 @@
 package com.campus.secondhand.service;
 
 import com.campus.secondhand.common.exception.BusinessException;
+import com.campus.secondhand.dto.admin.AdminChangePasswordRequest;
 import com.campus.secondhand.dto.admin.AdminLoginRequest;
 import com.campus.secondhand.entity.Admin;
 import com.campus.secondhand.entity.LoginLog;
@@ -8,6 +9,7 @@ import com.campus.secondhand.enums.AdminAccountStatus;
 import com.campus.secondhand.enums.AdminRoleCode;
 import com.campus.secondhand.mapper.AdminMapper;
 import com.campus.secondhand.mapper.LoginLogMapper;
+import com.campus.secondhand.security.AdminPrincipal;
 import com.campus.secondhand.security.JwtTokenProvider;
 import com.campus.secondhand.service.impl.AdminAuthServiceImpl;
 import com.campus.secondhand.vo.admin.AdminLoginResponse;
@@ -115,5 +117,46 @@ class AdminAuthServiceTest {
 
         verify(loginLogMapper).insert(any(LoginLog.class));
         verify(adminMapper, never()).selectByAdminNo(any());
+    }
+
+    @Test
+    void shouldChangePasswordWhenCurrentPasswordMatches() {
+        Admin admin = Admin.builder()
+                .adminId(1L)
+                .adminNo("admin1001")
+                .passwordHash("hash")
+                .roleCode(AdminRoleCode.SUPER_ADMIN)
+                .accountStatus(AdminAccountStatus.ACTIVE)
+                .build();
+        when(adminMapper.selectById(1L)).thenReturn(admin);
+        when(passwordEncoder.matches("old-pass", "hash")).thenReturn(true);
+        when(passwordEncoder.encode("new-pass")).thenReturn("new-hash");
+
+        adminAuthService.changePassword(
+                new AdminPrincipal(1L, "admin1001", "Campus Admin", "admin@campus.local", AdminRoleCode.SUPER_ADMIN),
+                new AdminChangePasswordRequest("old-pass", "new-pass"));
+
+        verify(adminMapper).updateById(any(Admin.class));
+        assertEquals("new-hash", admin.getPasswordHash());
+    }
+
+    @Test
+    void shouldRejectChangePasswordWhenCurrentPasswordIncorrect() {
+        Admin admin = Admin.builder()
+                .adminId(1L)
+                .adminNo("admin1001")
+                .passwordHash("hash")
+                .roleCode(AdminRoleCode.SUPER_ADMIN)
+                .accountStatus(AdminAccountStatus.ACTIVE)
+                .build();
+        when(adminMapper.selectById(1L)).thenReturn(admin);
+        when(passwordEncoder.matches("wrong", "hash")).thenReturn(false);
+
+        assertThrows(BusinessException.class,
+                () -> adminAuthService.changePassword(
+                        new AdminPrincipal(1L, "admin1001", "Campus Admin", "admin@campus.local", AdminRoleCode.SUPER_ADMIN),
+                        new AdminChangePasswordRequest("wrong", "new-pass")));
+
+        verify(adminMapper, never()).updateById(any(Admin.class));
     }
 }

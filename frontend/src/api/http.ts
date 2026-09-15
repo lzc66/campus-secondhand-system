@@ -59,6 +59,14 @@ export function apiPost<T>(url: string, data?: unknown, config?: AxiosRequestCon
   return http.post<any, T>(url, data, config);
 }
 
+/**
+ * 二进制下载(带鉴权头):用于学生证等需要 Bearer token 才能访问的文件,
+ * 返回 Blob,由调用方自行 createObjectURL / 触发下载。
+ */
+export function apiDownload<T = Blob>(url: string, config?: AxiosRequestConfig) {
+  return http.get<any, T>(url, { ...config, responseType: 'blob' });
+}
+
 export function apiPut<T>(url: string, data?: unknown, config?: AxiosRequestConfig) {
   return http.put<any, T>(url, data, config);
 }

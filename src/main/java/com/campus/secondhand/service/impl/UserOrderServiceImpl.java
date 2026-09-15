@@ -1,7 +1,9 @@
 package com.campus.secondhand.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.campus.secondhand.common.api.ErrorCode;
 import com.campus.secondhand.common.exception.BusinessException;
 import com.campus.secondhand.dto.user.CancelOrderRequest;
 import com.campus.secondhand.dto.user.CreateOrderRequest;
@@ -14,6 +16,7 @@ import com.campus.secondhand.entity.User;
 import com.campus.secondhand.enums.CancelledByType;
 import com.campus.secondhand.enums.DeliveryType;
 import com.campus.secondhand.enums.ItemStatus;
+import com.campus.secondhand.enums.ItemTradeMode;
 import com.campus.secondhand.enums.OrderOperatorType;
 import com.campus.secondhand.enums.OrderStatus;
 import com.campus.secondhand.enums.OrderType;
@@ -25,6 +28,7 @@ import com.campus.secondhand.mapper.OrderStatusLogMapper;
 import com.campus.secondhand.mapper.TradeOrderMapper;
 import com.campus.secondhand.mapper.UserMapper;
 import com.campus.secondhand.security.UserPrincipal;
+import com.campus.secondhand.service.NotificationService;
 import com.campus.secondhand.service.RecommendationBehaviorService;
 import com.campus.secondhand.service.UserOrderService;
 import com.campus.secondhand.vo.user.OrderItemResponse;
@@ -58,19 +62,22 @@ public class UserOrderServiceImpl implements UserOrderService {
     private final ItemMapper itemMapper;
     private final UserMapper userMapper;
     private final RecommendationBehaviorService recommendationBehaviorService;
+    private final NotificationService notificationService;
 
     public UserOrderServiceImpl(TradeOrderMapper tradeOrderMapper,
                                 OrderItemMapper orderItemMapper,
                                 OrderStatusLogMapper orderStatusLogMapper,
                                 ItemMapper itemMapper,
                                 UserMapper userMapper,
-                                RecommendationBehaviorService recommendationBehaviorService) {
+                                RecommendationBehaviorService recommendationBehaviorService,
+                                NotificationService notificationService) {
         this.tradeOrderMapper = tradeOrderMapper;
         this.orderItemMapper = orderItemMapper;
         this.orderStatusLogMapper = orderStatusLogMapper;
         this.itemMapper = itemMapper;
         this.userMapper = userMapper;
         this.recommendationBehaviorService = recommendationBehaviorService;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -78,7 +85,7 @@ public class UserOrderServiceImpl implements UserOrderService {
     public UserOrderDetailResponse createOrder(UserPrincipal principal, CreateOrderRequest request) {
         Item item = getPurchasableItem(request.itemId());
         if (Objects.equals(item.getSellerUserId(), principal.getUserId())) {
-            throw new BusinessException(40980, HttpStatus.CONFLICT, "You cannot buy your own item");
+            throw new BusinessException(ErrorCode.USER_ORDER_CANNOT_BUY_OWN);
         }
         if (request.quantity() > item.getStock()) {
             throw new BusinessException(40981, HttpStatus.CONFLICT, "Insufficient stock");
@@ -113,6 +120,7 @@ public class UserOrderServiceImpl implements UserOrderService {
                 .build());
         reduceItemStock(item, request.quantity());
         insertStatusLog(order.getOrderId(), OrderOperatorType.BUYER, buyer.getUserId(), null, OrderStatus.PENDING_CONFIRM, "Buyer submitted order");
+        notificationService.sendOrderStatusChanged(order, seller.getUserId(), null, null, OrderStatus.PENDING_CONFIRM, null);
         return buildDetailResponse(order);
     }
 
@@ -175,6 +183,7 @@ public class UserOrderServiceImpl implements UserOrderService {
         order.setSellerRemark(trimToNull(request == null ? null : request.actionNote()));
         tradeOrderMapper.updateById(order);
         insertStatusLog(order.getOrderId(), OrderOperatorType.SELLER, principal.getUserId(), OrderStatus.PENDING_CONFIRM, OrderStatus.AWAITING_DELIVERY, request == null ? null : trimToNull(request.actionNote()));
+        notificationService.sendOrderStatusChanged(order, order.getBuyerUserId(), null, OrderStatus.PENDING_CONFIRM, OrderStatus.AWAITING_DELIVERY, request == null ? null : trimToNull(request.actionNote()));
         return buildDetailResponse(order);
     }
 
@@ -189,6 +198,7 @@ public class UserOrderServiceImpl implements UserOrderService {
         order.setSellerRemark(trimToNull(request == null ? null : request.actionNote()));
         tradeOrderMapper.updateById(order);
         insertStatusLog(order.getOrderId(), OrderOperatorType.SELLER, principal.getUserId(), OrderStatus.AWAITING_DELIVERY, OrderStatus.DELIVERING, request == null ? null : trimToNull(request.actionNote()));
+        notificationService.sendOrderStatusChanged(order, order.getBuyerUserId(), null, OrderStatus.AWAITING_DELIVERY, OrderStatus.DELIVERING, request == null ? null : trimToNull(request.actionNote()));
         return buildDetailResponse(order);
     }
 
@@ -204,15 +214,10 @@ public class UserOrderServiceImpl implements UserOrderService {
         tradeOrderMapper.updateById(order);
         OrderItem orderItem = getRequiredOrderItem(order.getOrderId());
         Item item = getRequiredItem(orderItem.getItemId());
-        if (item.getStock() != null && item.getStock() == 0) {
-            item.setStatus(ItemStatus.SOLD);
-            item.setSoldAt(LocalDateTime.now());
-        } else {
-            item.setStatus(ItemStatus.ON_SALE);
-        }
-        itemMapper.updateById(item);
+        updateItemStatusAfterCompletion(item);
         insertStatusLog(order.getOrderId(), OrderOperatorType.BUYER, principal.getUserId(), OrderStatus.DELIVERING, OrderStatus.COMPLETED, request == null ? null : trimToNull(request.actionNote()));
         recommendationBehaviorService.recordPurchase(principal.getUserId(), orderItem.getItemId(), order.getOrderId());
+        notificationService.sendOrderStatusChanged(order, order.getSellerUserId(), null, OrderStatus.DELIVERING, OrderStatus.COMPLETED, request == null ? null : trimToNull(request.actionNote()));
         return buildDetailResponse(order);
     }
 
@@ -239,6 +244,7 @@ public class UserOrderServiceImpl implements UserOrderService {
         Item item = getRequiredItem(orderItem.getItemId());
         restoreItemStock(item, orderItem.getQuantity());
         insertStatusLog(order.getOrderId(), isBuyer ? OrderOperatorType.BUYER : OrderOperatorType.SELLER, principal.getUserId(), fromStatus, OrderStatus.CANCELLED, request.cancelReason().trim());
+        notificationService.sendOrderStatusChanged(order, isBuyer ? order.getSellerUserId() : order.getBuyerUserId(), null, fromStatus, OrderStatus.CANCELLED, request.cancelReason().trim());
         return buildDetailResponse(order);
     }
 
@@ -297,8 +303,11 @@ public class UserOrderServiceImpl implements UserOrderService {
 
     private Item getPurchasableItem(Long itemId) {
         Item item = itemMapper.selectById(itemId);
-        if (item == null || item.getStatus() != ItemStatus.ON_SALE) {
+        if (item == null || item.getStatus() != ItemStatus.ON_SALE || item.getDeletedAt() != null) {
             throw new BusinessException(40450, HttpStatus.NOT_FOUND, "Item not found");
+        }
+        if (item.getTradeMode() == ItemTradeMode.OFFLINE) {
+            throw new BusinessException(40985, HttpStatus.CONFLICT, "Item only supports offline trade, please contact the seller directly");
         }
         if (item.getStock() == null || item.getStock() <= 0) {
             throw new BusinessException(40983, HttpStatus.CONFLICT, "Item is out of stock");
@@ -363,7 +372,7 @@ public class UserOrderServiceImpl implements UserOrderService {
             case "dorm_delivery" -> DeliveryType.DORM_DELIVERY;
             case "self_pickup" -> DeliveryType.SELF_PICKUP;
             case "face_to_face" -> DeliveryType.FACE_TO_FACE;
-            default -> throw new BusinessException(40080, HttpStatus.BAD_REQUEST, "deliveryType is invalid");
+            default -> throw new BusinessException(ErrorCode.USER_ORDER_DELIVERY_TYPE_INVALID);
         };
     }
 
@@ -394,17 +403,60 @@ public class UserOrderServiceImpl implements UserOrderService {
     }
 
     private void reduceItemStock(Item item, int quantity) {
+        // 条件原子扣减:并发下单时只有一个请求能扣减成功,其余请求影响行数为 0 并得到冲突错误,
+        // 避免"读-判-写"竞态导致的超卖。
+        int decremented = itemMapper.update(null, new LambdaUpdateWrapper<Item>()
+                .setSql("stock = stock - " + quantity)
+                .eq(Item::getItemId, item.getItemId())
+                .ge(Item::getStock, quantity)
+                .eq(Item::getStatus, ItemStatus.ON_SALE));
+        if (decremented == 0) {
+            throw new BusinessException(40981, HttpStatus.CONFLICT, "Insufficient stock");
+        }
         int remaining = item.getStock() - quantity;
-        item.setStock(remaining);
-        item.setStatus(remaining == 0 ? ItemStatus.RESERVED : ItemStatus.ON_SALE);
-        itemMapper.updateById(item);
+        if (remaining == 0) {
+            itemMapper.update(Item.builder().status(ItemStatus.RESERVED).build(),
+                    new LambdaUpdateWrapper<Item>()
+                            .eq(Item::getItemId, item.getItemId())
+                            .eq(Item::getStatus, ItemStatus.ON_SALE));
+        }
     }
 
     private void restoreItemStock(Item item, int quantity) {
-        item.setStock((item.getStock() == null ? 0 : item.getStock()) + quantity);
-        item.setStatus(ItemStatus.ON_SALE);
-        item.setSoldAt(null);
-        itemMapper.updateById(item);
+        // 商品可能在订单存续期间被卖家删除:删除后不恢复库存、不还原状态,避免"复活"已删除商品。
+        if (item.getDeletedAt() != null || item.getStatus() == ItemStatus.DELETED) {
+            return;
+        }
+        itemMapper.update(null, new LambdaUpdateWrapper<Item>()
+                .setSql("stock = stock + " + quantity)
+                .eq(Item::getItemId, item.getItemId()));
+        // 只有因本订单被预留(RESERVED)的商品才回到在售;卖家主动下架(OFF_SHELF)等状态一律保持,
+        // 不能由订单取消动作覆盖卖家的意图。
+        if (item.getStatus() == ItemStatus.RESERVED) {
+            itemMapper.update(Item.builder().status(ItemStatus.ON_SALE).build(),
+                    new LambdaUpdateWrapper<Item>()
+                            .eq(Item::getItemId, item.getItemId())
+                            .eq(Item::getStatus, ItemStatus.RESERVED));
+        }
+    }
+
+    private void updateItemStatusAfterCompletion(Item item) {
+        // 商品可能在订单存续期间被卖家下架或删除,订单完成不能把这些状态覆盖掉;
+        // 仅当商品仍处于 RESERVED(为本订单预留)时才按库存转入 SOLD / ON_SALE。
+        if (item.getDeletedAt() != null || item.getStatus() == ItemStatus.DELETED) {
+            return;
+        }
+        if (item.getStock() != null && item.getStock() == 0) {
+            itemMapper.update(Item.builder().status(ItemStatus.SOLD).soldAt(LocalDateTime.now()).build(),
+                    new LambdaUpdateWrapper<Item>()
+                            .eq(Item::getItemId, item.getItemId())
+                            .eq(Item::getStatus, ItemStatus.RESERVED));
+        } else {
+            itemMapper.update(Item.builder().status(ItemStatus.ON_SALE).build(),
+                    new LambdaUpdateWrapper<Item>()
+                            .eq(Item::getItemId, item.getItemId())
+                            .eq(Item::getStatus, ItemStatus.RESERVED));
+        }
     }
 
     private void insertStatusLog(Long orderId,

@@ -1,10 +1,6 @@
 <template>
   <section class="glass-card panel">
-    <SectionHeading
-      title="注册审核"
-      description="集中处理学生注册申请，支持筛选、分页和学生证预览。"
-      tag="Review"
-    />
+    <SectionHeading title="注册审核" description="集中处理学生注册申请，支持筛选、分页和学生证预览。" tag="Review" />
 
     <div class="toolbar">
       <el-form :inline="true" :model="filters">
@@ -45,10 +41,20 @@
       <el-table-column label="操作" width="260" fixed="right">
         <template #default="{ row }">
           <el-button link type="primary" @click="showDetail(row.applicationId)">详情</el-button>
-          <el-button link type="success" :disabled="row.status !== 'pending'" @click="review(row.applicationId, 'approve')">
+          <el-button
+            link
+            type="success"
+            :disabled="row.status !== 'pending'"
+            @click="review(row.applicationId, 'approve')"
+          >
             通过
           </el-button>
-          <el-button link type="danger" :disabled="row.status !== 'pending'" @click="review(row.applicationId, 'reject')">
+          <el-button
+            link
+            type="danger"
+            :disabled="row.status !== 'pending'"
+            @click="review(row.applicationId, 'reject')"
+          >
             驳回
           </el-button>
         </template>
@@ -106,29 +112,15 @@
             <p class="eyebrow">学生证照片</p>
             <h3>{{ currentDetail.studentCardFile?.originalName || '未上传' }}</h3>
           </div>
-          <el-link
-            v-if="studentCardUrl"
-            :href="studentCardUrl"
-            target="_blank"
-          >
+          <el-link v-if="currentDetail?.studentCardFile" :underline="false" @click="handleViewOriginal">
             查看原图
           </el-link>
         </div>
 
         <div v-if="studentCardUrl" class="image-frame">
-          <el-image
-            :src="studentCardUrl"
-            fit="contain"
-            :preview-src-list="[studentCardUrl]"
-            preview-teleported
-          />
+          <el-image :src="studentCardUrl" fit="contain" :preview-src-list="[studentCardUrl]" preview-teleported />
         </div>
-        <EmptyState
-          v-else
-          title="暂无学生证照片"
-          description="该申请没有关联到可预览的学生证图片。"
-          compact
-        />
+        <EmptyState v-else title="暂无学生证照片" description="该申请没有关联到可预览的学生证图片。" compact />
 
         <div class="file-meta" v-if="currentDetail.studentCardFile">
           <span>文件类型：{{ currentDetail.studentCardFile.mimeType || '--' }}</span>
@@ -145,11 +137,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import SectionHeading from '@/components/common/SectionHeading.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
 import { adminApi } from '@/api/admin';
-import {
-  getGenderLabel,
-  getRegistrationStatusLabel,
-  getRegistrationStatusTagType
-} from '@/utils/status';
+import { getGenderLabel, getRegistrationStatusLabel, getRegistrationStatusTagType } from '@/utils/status';
 
 const filters = reactive({
   status: '',
@@ -165,7 +153,10 @@ const page = ref(1);
 const size = ref(10);
 const total = ref(0);
 
-const studentCardUrl = computed(() => currentDetail.value?.studentCardFile?.fileUrl || '');
+// 学生证经 /api/v1/admin/files/{id}/download 鉴权下载,el-image 无法携带 token,
+// 因此用 axios 拉取 Blob 后走 createObjectURL 预览。
+const studentCardUrl = ref('');
+let studentCardObjectUrl: string | null = null;
 
 onMounted(refresh);
 
@@ -199,16 +190,55 @@ function resetFilters() {
 async function showDetail(id: number) {
   currentDetail.value = await adminApi.getRegistrationDetail(id);
   detailVisible.value = true;
+  await loadStudentCardPreview();
+}
+
+async function loadStudentCardPreview() {
+  if (studentCardObjectUrl) {
+    URL.revokeObjectURL(studentCardObjectUrl);
+    studentCardObjectUrl = null;
+  }
+  studentCardUrl.value = '';
+  const fileUrl = currentDetail.value?.studentCardFile?.fileUrl;
+  if (!fileUrl) return;
+  if (fileUrl.startsWith('/api/v1/admin/files/')) {
+    try {
+      const blob = await adminApi.downloadStudentCardFile(fileUrl);
+      studentCardObjectUrl = URL.createObjectURL(blob);
+      studentCardUrl.value = studentCardObjectUrl;
+    } catch {
+      ElMessage.warning('学生证图片加载失败,可能已被清理');
+    }
+  } else {
+    // 兼容历史数据中仍指向公开静态地址的 URL
+    studentCardUrl.value = fileUrl;
+  }
+}
+
+async function handleViewOriginal() {
+  const fileUrl = currentDetail.value?.studentCardFile?.fileUrl;
+  if (!fileUrl) return;
+  if (fileUrl.startsWith('/api/v1/admin/files/')) {
+    try {
+      const blob = await adminApi.downloadStudentCardFile(fileUrl);
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = objectUrl;
+      anchor.download = currentDetail.value?.studentCardFile?.originalName || 'student-card';
+      anchor.click();
+      URL.revokeObjectURL(objectUrl);
+    } catch {
+      ElMessage.warning('学生证图片下载失败');
+    }
+  } else {
+    window.open(fileUrl, '_blank');
+  }
 }
 
 async function review(id: number, type: 'approve' | 'reject') {
-  const { value } = await ElMessageBox.prompt(
-    '请填写审核备注',
-    type === 'approve' ? '通过申请' : '驳回申请',
-    {
-      inputPlaceholder: '可选填写审核意见'
-    }
-  );
+  const { value } = await ElMessageBox.prompt('请填写审核备注', type === 'approve' ? '通过申请' : '驳回申请', {
+    inputPlaceholder: '可选填写审核意见'
+  });
 
   if (type === 'approve') {
     await adminApi.approveRegistration(id, { reviewRemark: value });

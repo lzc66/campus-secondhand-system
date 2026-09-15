@@ -9,6 +9,7 @@ import com.campus.secondhand.vo.admin.RegistrationApplicationPageResponse;
 import com.campus.secondhand.vo.admin.ReviewRegistrationResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -37,7 +38,7 @@ public class AdminRegistrationApplicationController {
             @RequestParam(required = false) String studentNo,
             @RequestParam(required = false) String email,
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "page must be greater than 0") long page,
-            @RequestParam(defaultValue = "10") @Min(value = 1, message = "size must be greater than 0") long size) {
+            @RequestParam(defaultValue = "10") @Min(value = 1, message = "size must be greater than 0") @Max(value = 100, message = "size must be at most 100") long size) {
         return ApiResponse.success(registrationReviewService.list(status, studentNo, email, page, size));
     }
 

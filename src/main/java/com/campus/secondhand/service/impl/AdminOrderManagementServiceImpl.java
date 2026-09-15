@@ -1,7 +1,9 @@
 package com.campus.secondhand.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.campus.secondhand.common.api.ErrorCode;
 import com.campus.secondhand.common.exception.BusinessException;
 import com.campus.secondhand.dto.admin.AdminOrderActionRequest;
 import com.campus.secondhand.entity.AdminOperationLog;
@@ -23,6 +25,7 @@ import com.campus.secondhand.mapper.TradeOrderMapper;
 import com.campus.secondhand.mapper.UserMapper;
 import com.campus.secondhand.security.AdminPrincipal;
 import com.campus.secondhand.service.AdminOrderManagementService;
+import com.campus.secondhand.service.NotificationService;
 import com.campus.secondhand.vo.admin.AdminOrderDetailResponse;
 import com.campus.secondhand.vo.admin.AdminOrderPageResponse;
 import com.campus.secondhand.vo.admin.AdminOrderStatusLogResponse;
@@ -51,19 +54,22 @@ public class AdminOrderManagementServiceImpl implements AdminOrderManagementServ
     private final ItemMapper itemMapper;
     private final UserMapper userMapper;
     private final AdminOperationLogMapper adminOperationLogMapper;
+    private final NotificationService notificationService;
 
     public AdminOrderManagementServiceImpl(TradeOrderMapper tradeOrderMapper,
                                            OrderItemMapper orderItemMapper,
                                            OrderStatusLogMapper orderStatusLogMapper,
                                            ItemMapper itemMapper,
                                            UserMapper userMapper,
-                                           AdminOperationLogMapper adminOperationLogMapper) {
+                                           AdminOperationLogMapper adminOperationLogMapper,
+                                           NotificationService notificationService) {
         this.tradeOrderMapper = tradeOrderMapper;
         this.orderItemMapper = orderItemMapper;
         this.orderStatusLogMapper = orderStatusLogMapper;
         this.itemMapper = itemMapper;
         this.userMapper = userMapper;
         this.adminOperationLogMapper = adminOperationLogMapper;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -107,7 +113,7 @@ public class AdminOrderManagementServiceImpl implements AdminOrderManagementServ
         if (order.getOrderStatus() != OrderStatus.PENDING_CONFIRM
                 && order.getOrderStatus() != OrderStatus.AWAITING_DELIVERY
                 && order.getOrderStatus() != OrderStatus.DELIVERING) {
-            throw new BusinessException(40980, HttpStatus.CONFLICT, "Current order status cannot be cancelled by admin");
+            throw new BusinessException(ErrorCode.ADMIN_ORDER_CANNOT_CANCEL);
         }
         OrderStatus fromStatus = order.getOrderStatus();
         String actionNote = trimToNull(request == null ? null : request.actionNote());
@@ -128,6 +134,9 @@ public class AdminOrderManagementServiceImpl implements AdminOrderManagementServ
         }
         insertStatusLog(order.getOrderId(), OrderOperatorType.ADMIN, principal.getAdminId(), fromStatus, OrderStatus.CANCELLED, actionNote);
         logOperation(principal.getAdminId(), order.getOrderId(), "cancel", "{\"orderStatus\":\"cancelled\"}");
+        // 管理员干预订单必须通知买卖双方,不能让他们只能靠刷新列表发现
+        notificationService.sendOrderStatusChanged(order, order.getBuyerUserId(), principal.getAdminId(), fromStatus, OrderStatus.CANCELLED, order.getCancelReason());
+        notificationService.sendOrderStatusChanged(order, order.getSellerUserId(), principal.getAdminId(), fromStatus, OrderStatus.CANCELLED, order.getCancelReason());
         return buildDetailResponse(order);
     }
 
@@ -144,6 +153,8 @@ public class AdminOrderManagementServiceImpl implements AdminOrderManagementServ
         tradeOrderMapper.updateById(order);
         insertStatusLog(order.getOrderId(), OrderOperatorType.ADMIN, principal.getAdminId(), fromStatus, OrderStatus.CLOSED, actionNote);
         logOperation(principal.getAdminId(), order.getOrderId(), "close", "{\"orderStatus\":\"closed\"}");
+        notificationService.sendOrderStatusChanged(order, order.getBuyerUserId(), principal.getAdminId(), fromStatus, OrderStatus.CLOSED, actionNote);
+        notificationService.sendOrderStatusChanged(order, order.getSellerUserId(), principal.getAdminId(), fromStatus, OrderStatus.CLOSED, actionNote);
         return buildDetailResponse(order);
     }
 
@@ -162,12 +173,20 @@ public class AdminOrderManagementServiceImpl implements AdminOrderManagementServ
     }
 
     private void restoreStock(Item item, Integer quantity) {
-        item.setStock((item.getStock() == null ? 0 : item.getStock()) + (quantity == null ? 0 : quantity));
-        if (item.getStatus() != ItemStatus.DELETED) {
-            item.setStatus(ItemStatus.ON_SALE);
-            item.setSoldAt(null);
+        // 商品可能在订单存续期间被删除:删除后不恢复库存、不还原状态,避免"复活"已删除商品。
+        if (item.getDeletedAt() != null || item.getStatus() == ItemStatus.DELETED) {
+            return;
         }
-        itemMapper.updateById(item);
+        itemMapper.update(null, new LambdaUpdateWrapper<Item>()
+                .setSql("stock = stock + " + (quantity == null ? 0 : quantity))
+                .eq(Item::getItemId, item.getItemId()));
+        // 只有被订单预留(RESERVED)的商品才回到在售;卖家主动下架等状态一律保持,不能由管理员取消订单覆盖。
+        if (item.getStatus() == ItemStatus.RESERVED) {
+            itemMapper.update(Item.builder().status(ItemStatus.ON_SALE).build(),
+                    new LambdaUpdateWrapper<Item>()
+                            .eq(Item::getItemId, item.getItemId())
+                            .eq(Item::getStatus, ItemStatus.RESERVED));
+        }
     }
 
     private AdminOrderSummaryResponse toSummary(TradeOrder order, OrderItem orderItem, Map<Long, User> userMap) {
@@ -287,7 +306,7 @@ public class AdminOrderManagementServiceImpl implements AdminOrderManagementServ
             case "completed" -> OrderStatus.COMPLETED;
             case "cancelled" -> OrderStatus.CANCELLED;
             case "closed" -> OrderStatus.CLOSED;
-            default -> throw new BusinessException(40080, HttpStatus.BAD_REQUEST, "orderStatus filter is invalid");
+            default -> throw new BusinessException(ErrorCode.ADMIN_ORDER_STATUS_FILTER_INVALID);
         };
     }
 

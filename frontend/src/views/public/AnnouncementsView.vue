@@ -1,6 +1,10 @@
 <template>
   <div class="page-shell page-block">
-    <SectionHeading title="系统公告" description="管理员发布的重要消息、交易提醒和校园平台通知都会集中展示在这里。" tag="Notices" />
+    <SectionHeading
+      title="系统公告"
+      description="管理员发布的重要消息、交易提醒和校园平台通知都会集中展示在这里。"
+      tag="Notices"
+    />
 
     <div v-if="isLoading" class="notice-list skeleton-list">
       <article v-for="index in 4" :key="index" class="notice-card glass-card">

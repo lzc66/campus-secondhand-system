@@ -21,7 +21,12 @@
         </el-form-item>
         <div class="captcha-row">
           <el-form-item label="验证码" prop="captcha">
-            <el-input v-model="form.captcha" maxlength="4" placeholder="请输入图片中的字符" @keyup.enter="handleLogin" />
+            <el-input
+              v-model="form.captcha"
+              maxlength="4"
+              placeholder="请输入图片中的字符"
+              @keyup.enter="handleLogin"
+            />
           </el-form-item>
           <div class="captcha-panel">
             <button class="captcha-box" type="button" :disabled="captchaLoading" @click="fetchCaptcha">
@@ -191,7 +196,10 @@ p {
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .captcha-box:hover {

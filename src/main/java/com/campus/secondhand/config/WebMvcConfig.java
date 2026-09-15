@@ -19,10 +19,18 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String publicBaseUrl = storageProperties.getPublicBaseUrl();
-        String pattern = publicBaseUrl.endsWith("/") ? publicBaseUrl + "**" : publicBaseUrl + "/**";
-        String location = Path.of(storageProperties.getRootDir()).toAbsolutePath().normalize().toUri().toString();
-        registry.addResourceHandler(pattern)
-                .addResourceLocations(location);
+        // 只公开商品图/头像/演示资源目录;student-cards(学生证影像,含真实姓名学号等 PII)等敏感目录
+        // 不挂载到静态资源,只能通过 /api/v1/admin/files/{fileId} 鉴权下载。
+        String baseUrl = storageProperties.getPublicBaseUrl().endsWith("/")
+                ? storageProperties.getPublicBaseUrl().substring(0, storageProperties.getPublicBaseUrl().length() - 1)
+                : storageProperties.getPublicBaseUrl();
+        for (String publicFolder : new String[]{"item-images", "avatars", "demo"}) {
+            registry.addResourceHandler(baseUrl + "/" + publicFolder + "/**")
+                    .addResourceLocations(locationFor(publicFolder));
+        }
+    }
+
+    private String locationFor(String folder) {
+        return Path.of(storageProperties.getRootDir()).resolve(folder).toAbsolutePath().normalize().toUri() + "/";
     }
 }

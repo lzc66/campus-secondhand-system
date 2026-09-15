@@ -3,11 +3,7 @@ package com.campus.secondhand.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.campus.secondhand.entity.Admin;
 import com.campus.secondhand.entity.AdminOperationLog;
-import com.campus.secondhand.entity.Item;
 import com.campus.secondhand.entity.ItemCategory;
-import com.campus.secondhand.entity.OrderItem;
-import com.campus.secondhand.entity.SearchHistory;
-import com.campus.secondhand.entity.TradeOrder;
 import com.campus.secondhand.entity.User;
 import com.campus.secondhand.enums.AdminAccountStatus;
 import com.campus.secondhand.enums.AdminRoleCode;
@@ -33,10 +29,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
@@ -77,10 +75,7 @@ class AdminDashboardServiceTest {
         when(tradeOrderMapper.selectCount(any())).thenReturn(15L, 6L, 5L);
         when(wantedPostMapper.selectCount(any())).thenReturn(7L);
         when(announcementMapper.selectCount(any())).thenReturn(4L);
-        when(tradeOrderMapper.selectList(any())).thenReturn(List.of(
-                TradeOrder.builder().totalAmount(new BigDecimal("120.50")).completedAt(LocalDateTime.now()).build(),
-                TradeOrder.builder().totalAmount(new BigDecimal("79.50")).completedAt(LocalDateTime.now()).build()
-        ));
+        when(tradeOrderMapper.selectCompletedAmountSince(any())).thenReturn(new BigDecimal("200.00"));
 
         var response = adminDashboardService.getOverview();
 
@@ -102,22 +97,17 @@ class AdminDashboardServiceTest {
     @Test
     void shouldBuildOrderTrendsAndRecentActivities() {
         LocalDate today = LocalDate.now();
-        when(tradeOrderMapper.selectList(any())).thenReturn(List.of(
-                TradeOrder.builder()
-                        .createdAt(today.minusDays(2).atTime(10, 0))
-                        .completedAt(today.minusDays(1).atTime(18, 0))
-                        .totalAmount(new BigDecimal("100.00"))
-                        .build(),
-                TradeOrder.builder()
-                        .createdAt(today.minusDays(1).atTime(11, 0))
-                        .cancelledAt(today.minusDays(1).atTime(20, 0))
-                        .totalAmount(new BigDecimal("50.00"))
-                        .build(),
-                TradeOrder.builder()
-                        .createdAt(today.atTime(9, 30))
-                        .completedAt(today.atTime(21, 0))
-                        .totalAmount(new BigDecimal("88.80"))
-                        .build()
+        when(tradeOrderMapper.selectCreatedTrend(any(), any())).thenReturn(List.of(
+                Map.of("d", java.sql.Date.valueOf(today.minusDays(2)), "c", 1L),
+                Map.of("d", java.sql.Date.valueOf(today.minusDays(1)), "c", 1L),
+                Map.of("d", java.sql.Date.valueOf(today), "c", 1L)
+        ));
+        when(tradeOrderMapper.selectCompletedTrend(any(), any())).thenReturn(List.of(
+                Map.of("d", java.sql.Date.valueOf(today.minusDays(1)), "c", 1L, "a", new BigDecimal("100.00")),
+                Map.of("d", java.sql.Date.valueOf(today), "c", 1L, "a", new BigDecimal("88.80"))
+        ));
+        when(tradeOrderMapper.selectCancelledTrend(any(), any())).thenReturn(List.of(
+                Map.of("d", java.sql.Date.valueOf(today.minusDays(1)), "c", 1L)
         ));
         doAnswer(invocation -> {
             Page<AdminOperationLog> page = invocation.getArgument(0);
@@ -149,34 +139,24 @@ class AdminDashboardServiceTest {
     @Test
     void shouldBuildCategorySalesHotKeywordsAndUserGrowth() {
         LocalDate today = LocalDate.now();
-        when(tradeOrderMapper.selectList(any())).thenReturn(List.of(
-                TradeOrder.builder().orderId(1L).completedAt(today.minusDays(1).atTime(18, 0)).totalAmount(new BigDecimal("100.00")).build(),
-                TradeOrder.builder().orderId(2L).completedAt(today.atTime(20, 0)).totalAmount(new BigDecimal("88.80")).build()
+        when(orderItemMapper.selectCategorySalesRanking(any(), any(), anyInt())).thenReturn(List.of(
+                Map.of("categoryId", 10L, "categoryName", "数码设备", "soldQuantity", 2L, "completedOrderCount", 1L, "completedAmount", new BigDecimal("100.00")),
+                Map.of("categoryId", 20L, "categoryName", "教材书籍", "soldQuantity", 1L, "completedOrderCount", 1L, "completedAmount", new BigDecimal("88.80"))
         ));
-        when(orderItemMapper.selectList(any())).thenReturn(List.of(
-                OrderItem.builder().orderId(1L).itemId(101L).quantity(2).subtotalAmount(new BigDecimal("100.00")).build(),
-                OrderItem.builder().orderId(2L).itemId(102L).quantity(1).subtotalAmount(new BigDecimal("88.80")).build()
-        ));
-        when(itemMapper.selectBatchIds(any())).thenReturn(List.of(
-                Item.builder().itemId(101L).categoryId(10L).build(),
-                Item.builder().itemId(102L).categoryId(20L).build()
+        when(searchHistoryMapper.selectKeywordCategoryCounts(any(), any())).thenReturn(List.of(
+                Map.of("keyword", "ipad", "categoryId", 10L, "cnt", 2L),
+                Map.of("keyword", " iPad ", "categoryId", 10L, "cnt", 1L),
+                Map.of("keyword", "java", "categoryId", 20L, "cnt", 1L)
         ));
         when(itemCategoryMapper.selectBatchIds(any())).thenReturn(List.of(
                 ItemCategory.builder().categoryId(10L).categoryName("数码设备").build(),
                 ItemCategory.builder().categoryId(20L).categoryName("教材书籍").build()
         ));
-        when(searchHistoryMapper.selectList(any())).thenReturn(List.of(
-                SearchHistory.builder().keyword("ipad").categoryId(10L).searchedAt(LocalDateTime.now()).build(),
-                SearchHistory.builder().keyword("ipad").categoryId(10L).searchedAt(LocalDateTime.now()).build(),
-                SearchHistory.builder().keyword("java").categoryId(20L).searchedAt(LocalDateTime.now()).build(),
-                SearchHistory.builder().keyword(" iPad ").categoryId(10L).searchedAt(LocalDateTime.now()).build()
-        ));
         when(userMapper.selectCount(any())).thenReturn(5L);
-        when(userMapper.selectList(any())).thenReturn(List.of(
-                User.builder().userId(1L).createdAt(today.minusDays(2).atTime(8, 0)).build(),
-                User.builder().userId(2L).createdAt(today.minusDays(1).atTime(9, 0)).build(),
-                User.builder().userId(3L).createdAt(today.minusDays(1).atTime(10, 0)).build(),
-                User.builder().userId(4L).createdAt(today.atTime(11, 0)).build()
+        when(userMapper.selectUserGrowth(any(), any())).thenReturn(List.of(
+                Map.of("d", java.sql.Date.valueOf(today.minusDays(2)), "c", 1L),
+                Map.of("d", java.sql.Date.valueOf(today.minusDays(1)), "c", 2L),
+                Map.of("d", java.sql.Date.valueOf(today), "c", 1L)
         ));
 
         var categoryRanking = adminDashboardService.getCategorySalesRanking(30, 10);

@@ -1,0 +1,13 @@
+# 测试环境配置:覆盖主配置中强制注入的敏感项,保证 @WebMvcTest/@SpringBootTest 上下文可独立启动。
+# 注意:test 类路径下的 application.yml 会整体遮蔽主配置,因此主配置中的默认值需要在此同步保留。
+app:
+  jwt:
+    secret: UnitTestJwtSecretKey-0123456789-ABCDEFGHIJKLMNOPQRSTUVWXYZ
+    expiration-seconds: 3600
+  storage:
+    root-dir: ${user.dir}/storage
+    public-base-url: /uploads
+
+spring:
+  datasource:
+    password: test

@@ -23,6 +23,8 @@ class PublicAnnouncementServiceTest {
 
     @Mock
     private AnnouncementMapper announcementMapper;
+    @Mock
+    private AdminDemoModeService adminDemoModeService;
 
     @InjectMocks
     private PublicAnnouncementServiceImpl publicAnnouncementService;

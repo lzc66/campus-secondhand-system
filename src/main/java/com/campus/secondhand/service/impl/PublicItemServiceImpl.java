@@ -17,6 +17,7 @@ import com.campus.secondhand.mapper.ItemImageMapper;
 import com.campus.secondhand.mapper.ItemMapper;
 import com.campus.secondhand.mapper.MediaFileMapper;
 import com.campus.secondhand.mapper.UserMapper;
+import com.campus.secondhand.service.AdminDemoModeService;
 import com.campus.secondhand.service.PublicItemService;
 import com.campus.secondhand.service.RecommendationBehaviorService;
 import com.campus.secondhand.vo.publicapi.PublicItemDetailResponse;
@@ -47,19 +48,22 @@ public class PublicItemServiceImpl implements PublicItemService {
     private final MediaFileMapper mediaFileMapper;
     private final UserMapper userMapper;
     private final RecommendationBehaviorService recommendationBehaviorService;
+    private final AdminDemoModeService adminDemoModeService;
 
     public PublicItemServiceImpl(ItemMapper itemMapper,
                                  ItemCategoryMapper itemCategoryMapper,
                                  ItemImageMapper itemImageMapper,
                                  MediaFileMapper mediaFileMapper,
                                  UserMapper userMapper,
-                                 RecommendationBehaviorService recommendationBehaviorService) {
+                                 RecommendationBehaviorService recommendationBehaviorService,
+                                 AdminDemoModeService adminDemoModeService) {
         this.itemMapper = itemMapper;
         this.itemCategoryMapper = itemCategoryMapper;
         this.itemImageMapper = itemImageMapper;
         this.mediaFileMapper = mediaFileMapper;
         this.userMapper = userMapper;
         this.recommendationBehaviorService = recommendationBehaviorService;
+        this.adminDemoModeService = adminDemoModeService;
     }
 
     @Override
@@ -83,6 +87,10 @@ public class PublicItemServiceImpl implements PublicItemService {
         Page<Item> queryPage = new Page<>(Math.max(page, 1), Math.max(size, 1));
         LambdaQueryWrapper<Item> wrapper = Wrappers.lambdaQuery(Item.class)
                 .eq(Item::getStatus, ItemStatus.ON_SALE)
+                .isNull(Item::getDeletedAt)
+                .and(!adminDemoModeService.isDemoModeEnabled(), q -> q
+                        .notLike(Item::getTitle, "[演示]%")
+                        .notLike(Item::getTitle, "[Demo]%"))
                 .eq(categoryId != null, Item::getCategoryId, categoryId)
                 .eq(conditionFilter != null, Item::getConditionLevel, conditionFilter)
                 .eq(tradeModeFilter != null, Item::getTradeMode, tradeModeFilter)
@@ -96,9 +104,7 @@ public class PublicItemServiceImpl implements PublicItemService {
                         .or().like(Item::getDescription, normalizedKeyword));
         applySort(wrapper, sortBy);
         Page<Item> result = itemMapper.selectPage(queryPage, wrapper);
-        List<PublicItemSummaryResponse> records = result.getRecords().stream()
-                .map(this::buildSummaryResponse)
-                .toList();
+        List<PublicItemSummaryResponse> records = buildSummaryResponses(result.getRecords());
         if (shouldRecordSearch(userId, categoryId, normalizedKeyword, normalizedBrand, priceMin, priceMax, conditionLevel, tradeMode)) {
             recommendationBehaviorService.recordSearch(userId, normalizedKeyword, categoryId, priceMin, priceMax, sortBy, "public_items");
         }
@@ -115,24 +121,47 @@ public class PublicItemServiceImpl implements PublicItemService {
         return buildDetailResponse(item);
     }
 
-    private PublicItemSummaryResponse buildSummaryResponse(Item item) {
-        ItemCategory category = itemCategoryMapper.selectById(item.getCategoryId());
-        String coverImageUrl = resolveCoverImageUrl(item.getItemId());
-        return new PublicItemSummaryResponse(
-                item.getItemId(),
-                item.getCategoryId(),
-                category == null ? null : category.getCategoryName(),
-                item.getTitle(),
-                item.getBrand(),
-                item.getModel(),
-                item.getConditionLevel().getValue(),
-                item.getPrice(),
-                item.getTradeMode().getValue(),
-                Objects.equals(item.getNegotiable(), 1),
-                coverImageUrl,
-                item.getViewCount(),
-                item.getPublishedAt()
-        );
+    /**
+     * 批量组装列表响应:分类与封面图一次性批量预取,避免每条商品记录产生 3 次查询的 N+1。
+     */
+    private List<PublicItemSummaryResponse> buildSummaryResponses(List<Item> items) {
+        if (items.isEmpty()) {
+            return List.of();
+        }
+        List<Long> categoryIds = items.stream().map(Item::getCategoryId).filter(Objects::nonNull).distinct().toList();
+        Map<Long, ItemCategory> categoryMap = categoryIds.isEmpty() ? Map.of()
+                : itemCategoryMapper.selectBatchIds(categoryIds).stream()
+                .collect(Collectors.toMap(ItemCategory::getCategoryId, category -> category, (a, b) -> a, LinkedHashMap::new));
+        List<Long> itemIds = items.stream().map(Item::getItemId).toList();
+        Map<Long, ItemImage> coverImageMap = itemImageMapper.selectList(new LambdaQueryWrapper<ItemImage>()
+                        .in(ItemImage::getItemId, itemIds)
+                        .orderByAsc(ItemImage::getSortOrder)).stream()
+                .collect(Collectors.toMap(ItemImage::getItemId, image -> image,
+                        (a, b) -> Objects.equals(a.getIsCover(), 1) ? a : b, LinkedHashMap::new));
+        List<Long> coverFileIds = coverImageMap.values().stream().map(ItemImage::getFileId).filter(Objects::nonNull).distinct().toList();
+        Map<Long, MediaFile> fileMap = coverFileIds.isEmpty() ? Map.of()
+                : mediaFileMapper.selectBatchIds(coverFileIds).stream()
+                .collect(Collectors.toMap(MediaFile::getFileId, file -> file, (a, b) -> a, LinkedHashMap::new));
+        return items.stream().map(item -> {
+            ItemCategory category = categoryMap.get(item.getCategoryId());
+            ItemImage cover = coverImageMap.get(item.getItemId());
+            MediaFile coverFile = cover == null ? null : fileMap.get(cover.getFileId());
+            return new PublicItemSummaryResponse(
+                    item.getItemId(),
+                    item.getCategoryId(),
+                    category == null ? null : category.getCategoryName(),
+                    item.getTitle(),
+                    item.getBrand(),
+                    item.getModel(),
+                    item.getConditionLevel().getValue(),
+                    item.getPrice(),
+                    item.getTradeMode().getValue(),
+                    Objects.equals(item.getNegotiable(), 1),
+                    coverFile == null ? null : coverFile.getFileUrl(),
+                    item.getViewCount(),
+                    item.getPublishedAt()
+            );
+        }).toList();
     }
 
     private PublicItemDetailResponse buildDetailResponse(Item item) {
@@ -223,10 +252,20 @@ public class PublicItemServiceImpl implements PublicItemService {
 
     private Item getRequiredPublicItem(Long itemId) {
         Item item = itemMapper.selectById(itemId);
-        if (item == null || item.getStatus() != ItemStatus.ON_SALE) {
+        // 软删除的商品(status 与 deleted_at 双账本)不得公开可见:完成/取消订单等路径可能只改回 status,
+        // 因此这里必须同时校验 deleted_at。
+        if (item == null || item.getStatus() != ItemStatus.ON_SALE || item.getDeletedAt() != null) {
+            throw new BusinessException(40450, HttpStatus.NOT_FOUND, "Item not found");
+        }
+        // 演示模式关闭时,演示商品对外表现为不存在
+        if (!adminDemoModeService.isDemoModeEnabled() && isDemoPrefixedTitle(item.getTitle())) {
             throw new BusinessException(40450, HttpStatus.NOT_FOUND, "Item not found");
         }
         return item;
+    }
+
+    private boolean isDemoPrefixedTitle(String title) {
+        return title != null && (title.startsWith("[演示]") || title.startsWith("[Demo]"));
     }
 
     private void applySort(LambdaQueryWrapper<Item> wrapper, String sortBy) {

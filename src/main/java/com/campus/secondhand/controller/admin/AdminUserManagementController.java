@@ -7,6 +7,7 @@ import com.campus.secondhand.service.AdminUserManagementService;
 import com.campus.secondhand.vo.admin.AdminUserDetailResponse;
 import com.campus.secondhand.vo.admin.AdminUserPageResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,7 +37,7 @@ public class AdminUserManagementController {
                                                    @RequestParam(required = false) String studentNo,
                                                    @RequestParam(required = false) String realName,
                                                    @RequestParam(defaultValue = "1") @Min(value = 1, message = "page must be greater than 0") long page,
-                                                   @RequestParam(defaultValue = "10") @Min(value = 1, message = "size must be greater than 0") long size) {
+                                                   @RequestParam(defaultValue = "10") @Min(value = 1, message = "size must be greater than 0") @Max(value = 100, message = "size must be at most 100") long size) {
         return ApiResponse.success(adminUserManagementService.list(accountStatus, studentNo, realName, page, size));
     }
 

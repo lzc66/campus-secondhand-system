@@ -21,12 +21,7 @@
     <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
       <el-form-item label="商品图片" required>
         <div class="image-uploader">
-          <el-upload
-            :auto-upload="false"
-            :show-file-list="false"
-            accept="image/*"
-            :on-change="handleImageChange"
-          >
+          <el-upload :auto-upload="false" :show-file-list="false" accept="image/*" :on-change="handleImageChange">
             <el-button :loading="uploadingImage">上传图片</el-button>
           </el-upload>
           <div class="image-list">

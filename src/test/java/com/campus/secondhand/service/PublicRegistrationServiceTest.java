@@ -45,7 +45,7 @@ class PublicRegistrationServiceTest {
                 "20240001", "Alice", "female", "alice@campus.local", "13800000000", "123456",
                 "Engineering", "Software", "Class 1", 9L
         );
-        when(fileStorageService.getRequiredFile(9L)).thenReturn(MediaFile.builder().fileId(9L).fileCategory("image").build());
+        when(fileStorageService.getRequiredFile(9L)).thenReturn(MediaFile.builder().fileId(9L).fileCategory("image").uploaderRole("guest").fileKey("student-cards/2026/09/abc.png").build());
         when(passwordEncoder.encode("123456")).thenReturn("encoded");
         doAnswer(invocation -> {
             RegistrationApplication application = invocation.getArgument(0);

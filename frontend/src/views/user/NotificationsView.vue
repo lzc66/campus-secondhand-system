@@ -1,10 +1,6 @@
 <template>
   <section class="glass-card panel">
-    <SectionHeading
-      title="通知中心"
-      description="集中查看站内通知，支持按未读筛选和一键全部已读。"
-      tag="Inbox"
-    >
+    <SectionHeading title="通知中心" description="集中查看站内通知，支持按未读筛选和一键全部已读。" tag="Inbox">
       <el-button @click="readAll">全部已读</el-button>
     </SectionHeading>
 

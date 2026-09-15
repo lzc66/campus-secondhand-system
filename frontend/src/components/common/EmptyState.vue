@@ -53,7 +53,9 @@ defineProps({
   background: radial-gradient(circle at 30% 30%, rgba(247, 179, 96, 0.95), rgba(35, 78, 119, 0.28) 72%);
   box-shadow: 0 18px 44px rgba(35, 78, 119, 0.16);
   filter: blur(2px);
-  animation: float 3.6s ease-in-out infinite, pulse 4.8s ease-in-out infinite;
+  animation:
+    float 3.6s ease-in-out infinite,
+    pulse 4.8s ease-in-out infinite;
 }
 h3 {
   margin: 0 0 10px;
@@ -72,19 +74,38 @@ p {
   justify-content: center;
 }
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 @keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.08); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
 }
 @keyframes drift {
-  0%, 100% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(12deg) scale(1.05); }
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(12deg) scale(1.05);
+  }
 }
 @keyframes driftReverse {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(-360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(-360deg);
+  }
 }
 </style>

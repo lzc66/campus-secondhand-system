@@ -8,6 +8,7 @@ import com.campus.secondhand.vo.common.MediaFileResponse;
 import com.campus.secondhand.vo.user.UserItemDetailResponse;
 import com.campus.secondhand.vo.user.UserItemPageResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -57,7 +58,7 @@ public class UserItemController {
     public ApiResponse<UserItemPageResponse> list(@AuthenticationPrincipal UserPrincipal principal,
                                                   @RequestParam(required = false) String status,
                                                   @RequestParam(defaultValue = "1") @Min(value = 1, message = "page must be greater than 0") long page,
-                                                  @RequestParam(defaultValue = "10") @Min(value = 1, message = "size must be greater than 0") long size) {
+                                                  @RequestParam(defaultValue = "10") @Min(value = 1, message = "size must be greater than 0") @Max(value = 100, message = "size must be at most 100") long size) {
         return ApiResponse.success(userItemService.listMyItems(principal, status, page, size));
     }
 

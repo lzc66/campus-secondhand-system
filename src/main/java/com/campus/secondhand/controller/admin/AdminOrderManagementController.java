@@ -6,6 +6,8 @@ import com.campus.secondhand.security.AdminPrincipal;
 import com.campus.secondhand.service.AdminOrderManagementService;
 import com.campus.secondhand.vo.admin.AdminOrderDetailResponse;
 import com.campus.secondhand.vo.admin.AdminOrderPageResponse;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,7 +38,7 @@ public class AdminOrderManagementController {
                                                     @RequestParam(required = false) String buyerStudentNo,
                                                     @RequestParam(required = false) String sellerStudentNo,
                                                     @RequestParam(defaultValue = "1") @Min(value = 1, message = "page must be greater than 0") long page,
-                                                    @RequestParam(defaultValue = "10") @Min(value = 1, message = "size must be greater than 0") long size) {
+                                                    @RequestParam(defaultValue = "10") @Min(value = 1, message = "size must be greater than 0") @Max(value = 100, message = "size must be at most 100") long size) {
         return ApiResponse.success(adminOrderManagementService.list(orderStatus, orderNo, buyerStudentNo, sellerStudentNo, page, size));
     }
 
@@ -50,7 +52,7 @@ public class AdminOrderManagementController {
     @PostMapping("/{orderId}/cancel")
     public ApiResponse<AdminOrderDetailResponse> cancel(@AuthenticationPrincipal AdminPrincipal principal,
                                                         @PathVariable Long orderId,
-                                                        @RequestBody(required = false) AdminOrderActionRequest request) {
+                                                        @Valid @RequestBody(required = false) AdminOrderActionRequest request) {
         return ApiResponse.success(adminOrderManagementService.cancel(principal, orderId, request));
     }
 
@@ -58,7 +60,7 @@ public class AdminOrderManagementController {
     @PostMapping("/{orderId}/close")
     public ApiResponse<AdminOrderDetailResponse> close(@AuthenticationPrincipal AdminPrincipal principal,
                                                        @PathVariable Long orderId,
-                                                       @RequestBody(required = false) AdminOrderActionRequest request) {
+                                                       @Valid @RequestBody(required = false) AdminOrderActionRequest request) {
         return ApiResponse.success(adminOrderManagementService.close(principal, orderId, request));
     }
 }

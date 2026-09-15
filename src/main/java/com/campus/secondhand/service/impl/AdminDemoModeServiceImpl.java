@@ -19,6 +19,7 @@ import com.campus.secondhand.entity.SearchHistory;
 import com.campus.secondhand.entity.SystemSetting;
 import com.campus.secondhand.entity.TradeOrder;
 import com.campus.secondhand.entity.User;
+import com.campus.secondhand.entity.UserBehaviorLog;
 import com.campus.secondhand.entity.UserRecommendation;
 import com.campus.secondhand.entity.WantedPost;
 import com.campus.secondhand.enums.AnnouncementPublishStatus;
@@ -55,6 +56,7 @@ import com.campus.secondhand.mapper.RegistrationApplicationMapper;
 import com.campus.secondhand.mapper.SearchHistoryMapper;
 import com.campus.secondhand.mapper.SystemSettingMapper;
 import com.campus.secondhand.mapper.TradeOrderMapper;
+import com.campus.secondhand.mapper.UserBehaviorLogMapper;
 import com.campus.secondhand.mapper.UserMapper;
 import com.campus.secondhand.mapper.UserRecommendationMapper;
 import com.campus.secondhand.mapper.WantedPostMapper;
@@ -63,6 +65,7 @@ import com.campus.secondhand.service.AdminDemoModeService;
 import com.campus.secondhand.vo.admin.DemoDataSeedResponse;
 import com.campus.secondhand.vo.admin.DemoDataSummaryResponse;
 import com.campus.secondhand.vo.admin.DemoModeStatusResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -82,6 +85,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class AdminDemoModeServiceImpl implements AdminDemoModeService {
 
@@ -151,6 +155,7 @@ public class AdminDemoModeServiceImpl implements AdminDemoModeService {
     private final NotificationMapper notificationMapper;
     private final UserRecommendationMapper userRecommendationMapper;
     private final AdminOperationLogMapper adminOperationLogMapper;
+    private final UserBehaviorLogMapper userBehaviorLogMapper;
     private final PasswordEncoder passwordEncoder;
 
     public AdminDemoModeServiceImpl(StorageProperties storageProperties,
@@ -171,6 +176,7 @@ public class AdminDemoModeServiceImpl implements AdminDemoModeService {
                                     NotificationMapper notificationMapper,
                                     UserRecommendationMapper userRecommendationMapper,
                                     AdminOperationLogMapper adminOperationLogMapper,
+                                    UserBehaviorLogMapper userBehaviorLogMapper,
                                     PasswordEncoder passwordEncoder) {
         this.storageProperties = storageProperties;
         this.systemSettingMapper = systemSettingMapper;
@@ -190,6 +196,7 @@ public class AdminDemoModeServiceImpl implements AdminDemoModeService {
         this.notificationMapper = notificationMapper;
         this.userRecommendationMapper = userRecommendationMapper;
         this.adminOperationLogMapper = adminOperationLogMapper;
+        this.userBehaviorLogMapper = userBehaviorLogMapper;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -305,6 +312,114 @@ public class AdminDemoModeServiceImpl implements AdminDemoModeService {
     public DemoModeStatusResponse updateSettings(AdminPrincipal principal, UpdateDemoModeRequest request) {
         upsertSetting(SETTING_DEMO_MODE_ENABLED, String.valueOf(Boolean.TRUE.equals(request.demoModeEnabled())), "boolean", principal.getAdminId());
         upsertSetting(SETTING_DEMO_ITEM_NOTES_ENABLED, String.valueOf(Boolean.TRUE.equals(request.demoItemNotesEnabled())), "boolean", principal.getAdminId());
+        return buildStatusResponse();
+    }
+
+    @Override
+    public boolean isDemoModeEnabled() {
+        return readBooleanSetting(SETTING_DEMO_MODE_ENABLED, false);
+    }
+
+    @Override
+    @Transactional
+    public DemoModeStatusResponse clearDemoData(AdminPrincipal principal) {
+        List<User> demoUsers = userMapper.selectList(new LambdaQueryWrapper<User>()
+                .in(User::getStudentNo, DEMO_USER_STUDENT_NOS));
+        List<Long> demoUserIds = demoUsers.stream().map(User::getUserId).toList();
+
+        List<Item> demoItems = itemMapper.selectList(new LambdaQueryWrapper<Item>()
+                .and(q -> q.likeRight(Item::getTitle, "[演示]").or().likeRight(Item::getTitle, "[Demo]")));
+        List<Long> demoItemIds = demoItems.stream().map(Item::getItemId).toList();
+
+        List<TradeOrder> demoOrders = tradeOrderMapper.selectList(new LambdaQueryWrapper<TradeOrder>()
+                .likeRight(TradeOrder::getOrderNo, "DEMO"));
+        List<Long> demoOrderIds = demoOrders.stream().map(TradeOrder::getOrderId).toList();
+
+        List<WantedPost> demoWantedPosts = wantedPostMapper.selectList(new LambdaQueryWrapper<WantedPost>()
+                .and(q -> q.likeRight(WantedPost::getTitle, "[演示]").or().likeRight(WantedPost::getTitle, "[Demo]")));
+        List<Long> demoWantedPostIds = demoWantedPosts.stream().map(WantedPost::getWantedPostId).toList();
+
+        List<Announcement> demoAnnouncements = announcementMapper.selectList(new LambdaQueryWrapper<Announcement>()
+                .and(q -> q.likeRight(Announcement::getTitle, "[演示]").or().likeRight(Announcement::getTitle, "[Demo]")));
+        List<Long> demoAnnouncementIds = demoAnnouncements.stream().map(Announcement::getAnnouncementId).toList();
+
+        List<RegistrationApplication> demoApplications = registrationApplicationMapper.selectList(new LambdaQueryWrapper<RegistrationApplication>()
+                .in(RegistrationApplication::getApplicationNo, DEMO_APPLICATION_NOS));
+        List<Long> demoApplicationIds = demoApplications.stream().map(RegistrationApplication::getApplicationId).toList();
+        List<Long> demoStudentCardFileIds = demoApplications.stream()
+                .map(RegistrationApplication::getStudentCardFileId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        List<Long> demoItemImageFileIds = demoItemIds.isEmpty() ? List.of()
+                : itemImageMapper.selectList(new LambdaQueryWrapper<ItemImage>().in(ItemImage::getItemId, demoItemIds)).stream()
+                .map(ItemImage::getFileId)
+                .filter(Objects::nonNull)
+                .toList();
+        List<Long> demoSvgFileIds = mediaFileMapper.selectList(new LambdaQueryWrapper<MediaFile>()
+                        .likeRight(MediaFile::getFileKey, "demo/")).stream()
+                .map(MediaFile::getFileId)
+                .toList();
+        List<Long> demoFileIds = java.util.stream.Stream.of(demoItemImageFileIds, demoStudentCardFileIds, demoSvgFileIds)
+                .flatMap(List::stream)
+                .distinct()
+                .toList();
+        List<String> demoFileKeys = demoFileIds.isEmpty() ? List.of()
+                : mediaFileMapper.selectBatchIds(demoFileIds).stream()
+                .map(MediaFile::getFileKey)
+                .filter(Objects::nonNull)
+                .toList();
+
+        // 按依赖顺序删除:先子表后父表,避免外键约束拦截;空列表一律跳过,防止生成非法的 IN () 语句
+        if (!demoItemIds.isEmpty() || !demoUserIds.isEmpty()) {
+            itemCommentMapper.delete(new LambdaQueryWrapper<ItemComment>()
+                    .and(q -> q.in(!demoItemIds.isEmpty(), ItemComment::getItemId, demoItemIds)
+                            .or().in(!demoUserIds.isEmpty(), ItemComment::getCommenterUserId, demoUserIds)));
+        }
+        if (!demoOrderIds.isEmpty()) {
+            orderItemMapper.delete(new LambdaQueryWrapper<OrderItem>().in(OrderItem::getOrderId, demoOrderIds));
+            orderStatusLogMapper.delete(new LambdaQueryWrapper<OrderStatusLog>().in(OrderStatusLog::getOrderId, demoOrderIds));
+            tradeOrderMapper.deleteBatchIds(demoOrderIds);
+        }
+        if (!demoItemIds.isEmpty()) {
+            itemImageMapper.delete(new LambdaQueryWrapper<ItemImage>().in(ItemImage::getItemId, demoItemIds));
+            itemMapper.deleteBatchIds(demoItemIds);
+        }
+        if (!demoWantedPostIds.isEmpty()) {
+            wantedPostMapper.deleteBatchIds(demoWantedPostIds);
+        }
+        if (!demoAnnouncementIds.isEmpty()) {
+            announcementMapper.deleteBatchIds(demoAnnouncementIds);
+        }
+        if (!demoUserIds.isEmpty()) {
+            notificationMapper.delete(new LambdaQueryWrapper<Notification>().in(Notification::getReceiverUserId, demoUserIds));
+            userRecommendationMapper.delete(new LambdaQueryWrapper<UserRecommendation>().in(UserRecommendation::getUserId, demoUserIds));
+            searchHistoryMapper.delete(new LambdaQueryWrapper<SearchHistory>().in(SearchHistory::getUserId, demoUserIds));
+            userBehaviorLogMapper.delete(new LambdaQueryWrapper<UserBehaviorLog>().in(UserBehaviorLog::getUserId, demoUserIds));
+            userMapper.deleteBatchIds(demoUserIds);
+        }
+        if (!demoApplicationIds.isEmpty()) {
+            registrationApplicationMapper.deleteBatchIds(demoApplicationIds);
+        }
+        adminOperationLogMapper.delete(new LambdaQueryWrapper<AdminOperationLog>()
+                .like(AdminOperationLog::getOperationDetail, "%Demo seed%"));
+        if (!demoFileIds.isEmpty()) {
+            mediaFileMapper.deleteBatchIds(demoFileIds);
+        }
+
+        // 磁盘文件清理(尽力而为,失败不影响事务)
+        Path root = Path.of(storageProperties.getRootDir()).toAbsolutePath().normalize();
+        for (String fileKey : demoFileKeys) {
+            try {
+                Files.deleteIfExists(root.resolve(fileKey.replace('/', java.io.File.separatorChar)));
+            } catch (IOException ex) {
+                log.warn("Failed to delete demo file {}: {}", fileKey, ex.getMessage());
+            }
+        }
+
+        // 重置演示开关(重新读取时回到默认值)
+        systemSettingMapper.delete(new LambdaQueryWrapper<SystemSetting>()
+                .in(SystemSetting::getSettingKey, SETTING_DEMO_MODE_ENABLED, SETTING_DEMO_ITEM_NOTES_ENABLED, SETTING_DEMO_DATA_SEEDED_AT));
         return buildStatusResponse();
     }
 

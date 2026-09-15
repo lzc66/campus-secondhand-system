@@ -5,6 +5,7 @@ import com.campus.secondhand.service.PublicWantedPostService;
 import com.campus.secondhand.vo.publicapi.PublicWantedPostDetailResponse;
 import com.campus.secondhand.vo.publicapi.PublicWantedPostPageResponse;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,7 +36,7 @@ public class PublicWantedPostController {
             @RequestParam(required = false) @DecimalMin(value = "0.0", inclusive = true, message = "priceMax must be greater than or equal to 0") BigDecimal priceMax,
             @RequestParam(required = false) String sortBy,
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "page must be greater than 0") long page,
-            @RequestParam(defaultValue = "10") @Min(value = 1, message = "size must be greater than 0") long size) {
+            @RequestParam(defaultValue = "10") @Min(value = 1, message = "size must be greater than 0") @Max(value = 100, message = "size must be at most 100") long size) {
         return ApiResponse.success(publicWantedPostService.listWantedPosts(
                 categoryId,
                 keyword,

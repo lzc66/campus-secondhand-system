@@ -41,6 +41,8 @@ class ItemCommentServiceTest {
     private UserMapper userMapper;
     @Mock
     private MediaFileMapper mediaFileMapper;
+    @Mock
+    private NotificationService notificationService;
 
     @InjectMocks
     private ItemCommentServiceImpl itemCommentService;

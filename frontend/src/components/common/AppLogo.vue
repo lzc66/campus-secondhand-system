@@ -33,6 +33,11 @@ defineProps({
   letter-spacing: 0.08em;
   box-shadow: 0 10px 30px rgba(25, 63, 58, 0.22);
 }
-strong { display: block; font-size: 16px; }
-small { color: var(--text-soft); }
+strong {
+  display: block;
+  font-size: 16px;
+}
+small {
+  color: var(--text-soft);
+}
 </style>

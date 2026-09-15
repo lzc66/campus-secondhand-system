@@ -5,26 +5,40 @@ Spring Boot 3.3 + MyBatis-Plus + MySQL + JWT backend for the campus second-hand 
 ## Run
 
 1. Ensure MySQL is running and `campus_secondhand` already exists.
-2. Adjust `src/main/resources/application.yml` or override env vars:
-   - `DB_HOST`
-   - `DB_PORT`
-   - `DB_NAME`
-   - `DB_USERNAME`
-   - `DB_PASSWORD`
-   - `JWT_SECRET`
-   - `STORAGE_ROOT_DIR`
-   - `STORAGE_PUBLIC_BASE_URL`
-   - optional `spring.mail.*` SMTP properties
-3. Start the application:
+2. Initialize the database (first time only):
 
 ```bash
+mysql -u root -p < database/schema.sql
+mysql -u root -p < database/seeds/001_initial_seed.sql
+```
+
+3. Configure environment variables (`DB_PASSWORD` and `JWT_SECRET` are required and have no defaults):
+
+   - `DB_HOST` (default `localhost`)
+   - `DB_PORT` (default `3306`)
+   - `DB_NAME` (default `campus_secondhand`)
+   - `DB_USERNAME` (default `root`)
+   - `DB_PASSWORD` (**required**)
+   - `JWT_SECRET` (**required**, at least 32 characters; the old default value shipped with the repository is rejected on startup)
+   - `STORAGE_ROOT_DIR`
+   - `STORAGE_PUBLIC_BASE_URL`
+   - SMTP settings are managed at runtime from the admin UI (`/admin/mail-settings`), not via `spring.mail.*`
+4. Start the application:
+
+```bash
+export DB_PASSWORD=your-mysql-password
+export JWT_SECRET='a-random-secret-of-at-least-32-characters'
 mvn -gs .mvn-settings.xml spring-boot:run
 ```
 
 ## Default admin
 
 - adminNo: `admin1001`
-- password: `123456`
+- password: `123456` (initial password only — change it immediately after first login)
+
+> `POST /api/v1/admin/init/bootstrap` only creates missing defaults; it never overwrites an existing
+> admin's password/role/status or category adjustments. Re-running the seed SQL is likewise a no-op
+> for existing rows.
 
 ## Local storage
 
@@ -33,6 +47,27 @@ mvn -gs .mvn-settings.xml spring-boot:run
 - Student card upload path pattern: `student-cards/yyyy/MM/{uuid}.{ext}`
 - Avatar upload path pattern: `avatars/yyyy/MM/{uuid}.{ext}`
 - Item image upload path pattern: `item-images/yyyy/MM/{uuid}.{ext}`
+
+> Only `item-images/`, `avatars/` and `demo/` are served as public static resources.
+> `student-cards/` (identity-card photos) is **not** publicly accessible; admins download it through
+> the authenticated endpoint `GET /api/v1/admin/files/{fileId}/download` (each view is audited).
+> Uploads are restricted to jpg/png/gif/webp with server-side magic-byte validation.
+
+## Demo mode (演示模式)
+
+- Admin: `GET /api/v1/admin/demo-mode`、`POST /api/v1/admin/demo-mode/seed`(注入演示数据)、`PUT /api/v1/admin/demo-mode`(切换开关)、`DELETE /api/v1/admin/demo-mode/clear`(清理全部演示数据)
+- 开关真正生效:关闭后演示商品/求购/公告从公开列表与详情隐藏,演示账号(20250001-20250004)禁止登录;开启后恢复。答辩演示前请保持开启。
+- Public: `GET /api/v1/public/demo-mode` 只返回展示开关布尔值(不含业务统计)。
+
+## Admin password
+
+- `PUT /api/v1/admin/auth/password` — change own password (current + new, 6-64 chars). The admin UI exposes this in the sidebar.
+
+## Rate limiting
+
+Anonymous endpoints are rate limited per IP (in-memory, fixed window): captcha 30/min, login 10/min,
+student-card upload 10/min, registration submit 5/min. User accounts are locked for 15 minutes after
+5 consecutive failed login attempts within 15 minutes (admins are rate-limited only, to avoid lockout DoS).
 
 ## Swagger
 

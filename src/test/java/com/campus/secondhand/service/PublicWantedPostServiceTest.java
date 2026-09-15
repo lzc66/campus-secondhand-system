@@ -37,6 +37,8 @@ class PublicWantedPostServiceTest {
     private UserMapper userMapper;
     @Mock
     private MediaFileMapper mediaFileMapper;
+    @Mock
+    private AdminDemoModeService adminDemoModeService;
 
     @InjectMocks
     private PublicWantedPostServiceImpl publicWantedPostService;

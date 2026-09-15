@@ -8,6 +8,7 @@ import com.campus.secondhand.service.AdminAnnouncementService;
 import com.campus.secondhand.vo.admin.AdminAnnouncementDetailResponse;
 import com.campus.secondhand.vo.admin.AdminAnnouncementPageResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,7 +37,7 @@ public class AdminAnnouncementController {
     @GetMapping
     public ApiResponse<AdminAnnouncementPageResponse> list(@RequestParam(required = false) String publishStatus,
                                                            @RequestParam(defaultValue = "1") @Min(value = 1, message = "page must be greater than 0") long page,
-                                                           @RequestParam(defaultValue = "10") @Min(value = 1, message = "size must be greater than 0") long size) {
+                                                           @RequestParam(defaultValue = "10") @Min(value = 1, message = "size must be greater than 0") @Max(value = 100, message = "size must be at most 100") long size) {
         return ApiResponse.success(adminAnnouncementService.list(publishStatus, page, size));
     }
 

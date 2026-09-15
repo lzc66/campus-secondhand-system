@@ -6,7 +6,9 @@
         <div class="avatar-card">
           <img v-if="profile.avatarUrl" :src="profile.avatarUrl" alt="avatar" />
           <div v-else class="avatar-fallback">{{ profile.realName?.slice(0, 1) || 'U' }}</div>
-          <el-upload :show-file-list="false" :auto-upload="false" accept="image/*" :on-change="handleAvatarChange"><el-button>上传头像</el-button></el-upload>
+          <el-upload :show-file-list="false" :auto-upload="false" accept="image/*" :on-change="handleAvatarChange"
+            ><el-button>上传头像</el-button></el-upload
+          >
         </div>
         <el-form :model="profile" label-width="90px" class="profile-form">
           <el-form-item label="学号"><el-input v-model="profile.studentNo" disabled /></el-form-item>
@@ -26,7 +28,7 @@
     <section class="glass-card panel">
       <SectionHeading title="修改密码" description="修改后请使用新密码重新登录。" tag="Security" />
       <el-form :model="passwordForm" label-width="90px" class="password-form">
-        <el-form-item label="旧密码"><el-input v-model="passwordForm.oldPassword" show-password /></el-form-item>
+        <el-form-item label="旧密码"><el-input v-model="passwordForm.currentPassword" show-password /></el-form-item>
         <el-form-item label="新密码"><el-input v-model="passwordForm.newPassword" show-password /></el-form-item>
         <el-form-item label="确认密码"><el-input v-model="passwordForm.confirmPassword" show-password /></el-form-item>
         <el-form-item><el-button type="primary" @click="changePassword">更新密码</el-button></el-form-item>
@@ -44,7 +46,7 @@ import { useAuthStore } from '@/stores/auth';
 
 const authStore = useAuthStore();
 const profile = reactive<any>({});
-const passwordForm = reactive({ oldPassword: '', newPassword: '', confirmPassword: '' });
+const passwordForm = reactive({ currentPassword: '', newPassword: '', confirmPassword: '' });
 
 onMounted(async () => {
   Object.assign(profile, await userApi.getProfile());
@@ -57,9 +59,27 @@ async function saveProfile() {
 }
 
 async function changePassword() {
-  await userApi.changePassword(passwordForm);
+  if (!passwordForm.currentPassword) {
+    ElMessage.warning('请输入旧密码');
+    return;
+  }
+  if (!passwordForm.newPassword || passwordForm.newPassword.length < 6 || passwordForm.newPassword.length > 64) {
+    ElMessage.warning('新密码长度需在 6-64 位之间');
+    return;
+  }
+  if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+    ElMessage.warning('两次输入的新密码不一致');
+    return;
+  }
+  // 后端字段名为 currentPassword / newPassword,confirmPassword 仅用于前端一致性校验,不提交
+  await userApi.changePassword({
+    currentPassword: passwordForm.currentPassword,
+    newPassword: passwordForm.newPassword
+  });
   ElMessage.success('密码已更新');
-  passwordForm.oldPassword = ''; passwordForm.newPassword = ''; passwordForm.confirmPassword = '';
+  passwordForm.currentPassword = '';
+  passwordForm.newPassword = '';
+  passwordForm.confirmPassword = '';
 }
 
 async function handleAvatarChange(file: any) {
@@ -71,11 +91,41 @@ async function handleAvatarChange(file: any) {
 </script>
 
 <style scoped>
-.page-stack { display: grid; gap: 22px; }
-.panel { padding: 24px; }
-.profile-top { display: grid; grid-template-columns: 220px 1fr; gap: 24px; }
-.avatar-card { display: grid; gap: 14px; justify-items: start; }
-.avatar-card img, .avatar-fallback { width: 160px; height: 160px; border-radius: 28px; object-fit: cover; }
-.avatar-fallback { display: grid; place-items: center; font-size: 56px; color: #fff; background: linear-gradient(135deg, var(--brand), var(--accent)); font-family: var(--font-display); }
-@media (max-width: 900px) { .profile-top { grid-template-columns: 1fr; } }
+.page-stack {
+  display: grid;
+  gap: 22px;
+}
+.panel {
+  padding: 24px;
+}
+.profile-top {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 24px;
+}
+.avatar-card {
+  display: grid;
+  gap: 14px;
+  justify-items: start;
+}
+.avatar-card img,
+.avatar-fallback {
+  width: 160px;
+  height: 160px;
+  border-radius: 28px;
+  object-fit: cover;
+}
+.avatar-fallback {
+  display: grid;
+  place-items: center;
+  font-size: 56px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--brand), var(--accent));
+  font-family: var(--font-display);
+}
+@media (max-width: 900px) {
+  .profile-top {
+    grid-template-columns: 1fr;
+  }
+}
 </style>

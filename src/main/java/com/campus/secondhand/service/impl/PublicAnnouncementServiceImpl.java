@@ -6,6 +6,7 @@ import com.campus.secondhand.common.exception.BusinessException;
 import com.campus.secondhand.entity.Announcement;
 import com.campus.secondhand.enums.AnnouncementPublishStatus;
 import com.campus.secondhand.mapper.AnnouncementMapper;
+import com.campus.secondhand.service.AdminDemoModeService;
 import com.campus.secondhand.service.PublicAnnouncementService;
 import com.campus.secondhand.vo.publicapi.PublicAnnouncementPageResponse;
 import com.campus.secondhand.vo.publicapi.PublicAnnouncementResponse;
@@ -20,9 +21,12 @@ import java.util.Objects;
 public class PublicAnnouncementServiceImpl implements PublicAnnouncementService {
 
     private final AnnouncementMapper announcementMapper;
+    private final AdminDemoModeService adminDemoModeService;
 
-    public PublicAnnouncementServiceImpl(AnnouncementMapper announcementMapper) {
+    public PublicAnnouncementServiceImpl(AnnouncementMapper announcementMapper,
+                                         AdminDemoModeService adminDemoModeService) {
         this.announcementMapper = announcementMapper;
+        this.adminDemoModeService = adminDemoModeService;
     }
 
     @Override
@@ -30,6 +34,9 @@ public class PublicAnnouncementServiceImpl implements PublicAnnouncementService 
         Page<Announcement> queryPage = new Page<>(Math.max(page, 1), Math.max(size, 1));
         Page<Announcement> result = announcementMapper.selectPage(queryPage, new LambdaQueryWrapper<Announcement>()
                 .eq(Announcement::getPublishStatus, AnnouncementPublishStatus.PUBLISHED)
+                .and(!adminDemoModeService.isDemoModeEnabled(), q -> q
+                        .notLike(Announcement::getTitle, "[演示]%")
+                        .notLike(Announcement::getTitle, "[Demo]%"))
                 .and(q -> q.isNull(Announcement::getExpireAt).or().gt(Announcement::getExpireAt, LocalDateTime.now()))
                 .orderByDesc(Announcement::getIsPinned)
                 .orderByDesc(Announcement::getPublishedAt)

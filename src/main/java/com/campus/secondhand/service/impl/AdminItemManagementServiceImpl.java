@@ -2,6 +2,7 @@ package com.campus.secondhand.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.campus.secondhand.common.api.ErrorCode;
 import com.campus.secondhand.common.exception.BusinessException;
 import com.campus.secondhand.dto.admin.UpdateItemStatusRequest;
 import com.campus.secondhand.entity.AdminOperationLog;
@@ -245,13 +246,13 @@ public class AdminItemManagementServiceImpl implements AdminItemManagementServic
 
     private ItemStatus parseMutableStatus(String value) {
         if (!StringUtils.hasText(value)) {
-            throw new BusinessException(40041, HttpStatus.BAD_REQUEST, "itemStatus is required");
+            throw new BusinessException(ErrorCode.ADMIN_ITEM_STATUS_REQUIRED);
         }
         return switch (value.trim().toLowerCase(Locale.ROOT)) {
             case "on_sale" -> ItemStatus.ON_SALE;
             case "off_shelf" -> ItemStatus.OFF_SHELF;
             case "deleted" -> ItemStatus.DELETED;
-            default -> throw new BusinessException(40042, HttpStatus.BAD_REQUEST, "itemStatus must be on_sale, off_shelf, or deleted");
+            default -> throw new BusinessException(ErrorCode.ADMIN_ITEM_STATUS_INVALID);
         };
     }
 

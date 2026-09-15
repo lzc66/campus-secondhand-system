@@ -41,6 +41,8 @@ class UserAuthServiceTest {
     private MediaFileMapper mediaFileMapper;
     @Mock
     private LoginCaptchaService loginCaptchaService;
+    @Mock
+    private AdminDemoModeService adminDemoModeService;
 
     @InjectMocks
     private UserAuthServiceImpl userAuthService;

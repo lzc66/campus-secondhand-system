@@ -143,7 +143,9 @@ const reports = [
   }
 ] as const;
 
-const rangeSummary = computed(() => (rangeValue.value.length === 2 ? `${rangeValue.value[0]} 至 ${rangeValue.value[1]}` : '请选择开始和结束日期'));
+const rangeSummary = computed(() =>
+  rangeValue.value.length === 2 ? `${rangeValue.value[0]} 至 ${rangeValue.value[1]}` : '请选择开始和结束日期'
+);
 
 async function download(report: (typeof reports)[number]) {
   if (report.withTime && !validateTimeMode()) {

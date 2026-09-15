@@ -22,16 +22,19 @@
         </el-form-item>
         <div class="captcha-row">
           <el-form-item label="验证码" prop="captcha">
-            <el-input v-model="form.captcha" maxlength="4" placeholder="请输入图片中的字符" @keyup.enter="handleLogin" />
+            <el-input
+              v-model="form.captcha"
+              maxlength="4"
+              placeholder="请输入图片中的字符"
+              @keyup.enter="handleLogin"
+            />
           </el-form-item>
           <div class="captcha-panel">
             <button class="captcha-box" type="button" :disabled="captchaLoading" @click="fetchCaptcha">
               <img v-if="captchaImage" :src="captchaImage" alt="登录验证码" />
               <span v-else>{{ captchaLoading ? '加载中...' : '点击加载验证码' }}</span>
             </button>
-            <button class="captcha-link" type="button" :disabled="captchaLoading" @click="fetchCaptcha">
-              换一张
-            </button>
+            <button class="captcha-link" type="button" :disabled="captchaLoading" @click="fetchCaptcha">换一张</button>
           </div>
         </div>
         <el-button type="primary" class="submit-btn" :loading="submitting" @click="handleLogin">用户登录</el-button>
@@ -214,7 +217,10 @@ p {
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .captcha-box:hover {

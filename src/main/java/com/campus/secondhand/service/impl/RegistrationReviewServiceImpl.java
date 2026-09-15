@@ -3,6 +3,7 @@ package com.campus.secondhand.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.campus.secondhand.common.exception.BusinessException;
+import com.campus.secondhand.common.util.JsonUtil;
 import com.campus.secondhand.dto.admin.ReviewRegistrationApplicationRequest;
 import com.campus.secondhand.entity.AdminOperationLog;
 import com.campus.secondhand.entity.MediaFile;
@@ -28,8 +29,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 @Service
 public class RegistrationReviewServiceImpl implements RegistrationReviewService {
@@ -81,6 +84,7 @@ public class RegistrationReviewServiceImpl implements RegistrationReviewService 
     public RegistrationApplicationDetailResponse detail(Long applicationId) {
         RegistrationApplication application = getRequiredApplication(applicationId);
         MediaFile mediaFile = fileStorageService.getRequiredFile(application.getStudentCardFileId());
+        // 学生证目录不再挂载到公开静态资源,详情中的 fileUrl 指向鉴权下载接口
         return toDetail(application, mediaFile);
     }
 
@@ -189,7 +193,7 @@ public class RegistrationReviewServiceImpl implements RegistrationReviewService 
                 application.getSubmittedAt(),
                 new MediaFileResponse(
                         mediaFile.getFileId(),
-                        mediaFile.getFileUrl(),
+                        buildStudentCardViewUrl(mediaFile),
                         mediaFile.getOriginalName(),
                         mediaFile.getFileSize(),
                         mediaFile.getMimeType()
@@ -197,19 +201,27 @@ public class RegistrationReviewServiceImpl implements RegistrationReviewService 
         );
     }
 
+    /**
+     * 学生证影像经 /api/v1/admin/files/{fileId}/download 鉴权下载(带 Bearer token),
+     * 不再返回 /uploads/student-cards/** 的匿名静态地址。
+     */
+    private String buildStudentCardViewUrl(MediaFile mediaFile) {
+        if (mediaFile.getFileKey() != null && mediaFile.getFileKey().startsWith("student-cards/")) {
+            return "/api/v1/admin/files/" + mediaFile.getFileId() + "/download";
+        }
+        return mediaFile.getFileUrl();
+    }
+
     private void saveAuditLog(Long adminId, Long applicationId, String operationType, String reviewRemark, String ipAddress) {
-        String escapedRemark = reviewRemark == null ? null : reviewRemark.replace("\\", "\\\\").replace("\"", "\\\"");
-        String detail = String.format(
-                "{\"status\":\"%s\",\"reviewRemark\":%s}",
-                operationType,
-                escapedRemark == null ? null : "\"" + escapedRemark + "\""
-        );
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("status", operationType);
+        payload.put("reviewRemark", reviewRemark);
         adminOperationLogMapper.insert(AdminOperationLog.builder()
                 .adminId(adminId)
                 .targetType("registration")
                 .targetId(applicationId)
                 .operationType(operationType)
-                .operationDetail(detail)
+                .operationDetail(JsonUtil.toJson(payload))
                 .ipAddress(ipAddress)
                 .build());
     }

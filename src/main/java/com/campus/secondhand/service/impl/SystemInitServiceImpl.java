@@ -1,5 +1,6 @@
 package com.campus.secondhand.service.impl;
 
+import com.campus.secondhand.common.util.JsonUtil;
 import com.campus.secondhand.entity.Admin;
 import com.campus.secondhand.entity.AdminOperationLog;
 import com.campus.secondhand.entity.ItemCategory;
@@ -13,10 +14,12 @@ import com.campus.secondhand.service.SystemInitService;
 import com.campus.secondhand.vo.admin.BootstrapResponse;
 import com.campus.secondhand.vo.admin.InitStatusResponse;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 
 @Service
 public class SystemInitServiceImpl implements SystemInitService {
@@ -47,11 +50,12 @@ public class SystemInitServiceImpl implements SystemInitService {
     }
 
     @Override
+    @Transactional
     public BootstrapResponse bootstrap(AdminPrincipal principal) {
         int created = 0;
-        int updated = 0;
         int skipped = 0;
 
+        // 已存在的分类只跳过、绝不覆盖:管理员在后台对分类的下架/改名/排序调整不应被 bootstrap 静默回滚。
         for (DefaultCategory defaultCategory : DEFAULT_CATEGORIES) {
             ItemCategory existing = itemCategoryMapper.selectByCategoryCode(defaultCategory.categoryCode());
             if (existing == null) {
@@ -63,25 +67,13 @@ public class SystemInitServiceImpl implements SystemInitService {
                         .isEnabled(1)
                         .build());
                 created++;
-                continue;
-            }
-
-            boolean changed = !Objects.equals(existing.getCategoryName(), defaultCategory.categoryName())
-                    || !Objects.equals(existing.getSortOrder(), defaultCategory.sortOrder())
-                    || !Objects.equals(existing.getIsEnabled(), 1)
-                    || existing.getParentId() != null;
-            if (changed) {
-                existing.setParentId(null);
-                existing.setCategoryName(defaultCategory.categoryName());
-                existing.setSortOrder(defaultCategory.sortOrder());
-                existing.setIsEnabled(1);
-                itemCategoryMapper.updateById(existing);
-                updated++;
             } else {
                 skipped++;
             }
         }
 
+        // 管理员已存在时只跳过、绝不覆盖:密码、角色、启用状态一律保持现状,避免把改过的密码重置回默认值、
+        // 把被停用的账号重新激活。
         Admin defaultAdmin = adminMapper.selectByAdminNo(DEFAULT_ADMIN_NO);
         if (defaultAdmin == null) {
             defaultAdmin = Admin.builder()
@@ -95,35 +87,24 @@ public class SystemInitServiceImpl implements SystemInitService {
             adminMapper.insert(defaultAdmin);
             created++;
         } else {
-            boolean changed = !Objects.equals(defaultAdmin.getPasswordHash(), DEFAULT_ADMIN_HASH)
-                    || !Objects.equals(defaultAdmin.getAdminName(), DEFAULT_ADMIN_NAME)
-                    || !Objects.equals(defaultAdmin.getEmail(), DEFAULT_ADMIN_EMAIL)
-                    || defaultAdmin.getRoleCode() != AdminRoleCode.SUPER_ADMIN
-                    || defaultAdmin.getAccountStatus() != AdminAccountStatus.ACTIVE;
-            if (changed) {
-                defaultAdmin.setPasswordHash(DEFAULT_ADMIN_HASH);
-                defaultAdmin.setAdminName(DEFAULT_ADMIN_NAME);
-                defaultAdmin.setEmail(DEFAULT_ADMIN_EMAIL);
-                defaultAdmin.setRoleCode(AdminRoleCode.SUPER_ADMIN);
-                defaultAdmin.setAccountStatus(AdminAccountStatus.ACTIVE);
-                adminMapper.updateById(defaultAdmin);
-                updated++;
-            } else {
-                skipped++;
-            }
+            skipped++;
         }
 
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("action", "bootstrap");
+        payload.put("createdCount", created);
+        payload.put("skippedCount", skipped);
         AdminOperationLog log = AdminOperationLog.builder()
                 .adminId(principal.getAdminId())
                 .targetType("user")
                 .targetId(defaultAdmin.getAdminId())
                 .operationType("other")
-                .operationDetail(String.format("{\"action\":\"bootstrap\",\"createdCount\":%d,\"updatedCount\":%d,\"skippedCount\":%d}", created, updated, skipped))
+                .operationDetail(JsonUtil.toJson(payload))
                 .ipAddress(null)
                 .build();
         adminOperationLogMapper.insert(log);
 
-        return new BootstrapResponse(created, updated, skipped);
+        return new BootstrapResponse(created, 0, skipped);
     }
 
     @Override

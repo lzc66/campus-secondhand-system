@@ -16,4 +16,13 @@ public interface RegistrationApplicationMapper extends BaseMapper<RegistrationAp
             LIMIT 1
             """)
     RegistrationApplication selectPendingByStudentNo(@Param("studentNo") String studentNo);
+
+    @Select("""
+            SELECT *
+            FROM registration_applications
+            WHERE student_card_file_id = #{fileId}
+            ORDER BY application_id DESC
+            LIMIT 1
+            """)
+    RegistrationApplication selectByStudentCardFileId(@Param("fileId") Long fileId);
 }

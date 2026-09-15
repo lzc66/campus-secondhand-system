@@ -70,10 +70,18 @@
         <el-table-column label="操作" min-width="320" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="viewDetail(row.orderId)">详情</el-button>
-            <el-button v-if="canConfirm(row)" link type="primary" @click="action(row.orderId, 'confirm')">确认接单</el-button>
-            <el-button v-if="canDeliver(row)" link type="warning" @click="action(row.orderId, 'deliver')">标记配送中</el-button>
-            <el-button v-if="canComplete(row)" link type="success" @click="action(row.orderId, 'complete')">确认完成</el-button>
-            <el-button v-if="canCancel(row)" link type="danger" @click="action(row.orderId, 'cancel')">取消订单</el-button>
+            <el-button v-if="canConfirm(row)" link type="primary" @click="action(row.orderId, 'confirm')"
+              >确认接单</el-button
+            >
+            <el-button v-if="canDeliver(row)" link type="warning" @click="action(row.orderId, 'deliver')"
+              >标记配送中</el-button
+            >
+            <el-button v-if="canComplete(row)" link type="success" @click="action(row.orderId, 'complete')"
+              >确认完成</el-button
+            >
+            <el-button v-if="canCancel(row)" link type="danger" @click="action(row.orderId, 'cancel')"
+              >取消订单</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
@@ -92,7 +100,11 @@
     <EmptyState
       v-else
       title="还没有订单"
-      :description="role === 'buyer' ? '你还没有下单记录，先去逛逛商品列表吧。' : '暂时还没有买家下单，你发布的商品成交后会显示在这里。'"
+      :description="
+        role === 'buyer'
+          ? '你还没有下单记录，先去逛逛商品列表吧。'
+          : '暂时还没有买家下单，你发布的商品成交后会显示在这里。'
+      "
     >
       <el-button v-if="role === 'buyer'" type="primary" @click="router.push('/items')">去浏览商品</el-button>
     </EmptyState>
@@ -113,7 +125,9 @@
       />
       <el-descriptions :column="1" border>
         <el-descriptions-item label="订单号">{{ currentOrder.orderNo || '--' }}</el-descriptions-item>
-        <el-descriptions-item label="商品">{{ currentOrder.items?.[0]?.itemTitleSnapshot || '--' }}</el-descriptions-item>
+        <el-descriptions-item label="商品">{{
+          currentOrder.items?.[0]?.itemTitleSnapshot || '--'
+        }}</el-descriptions-item>
         <el-descriptions-item label="订单状态">
           {{ getOrderStatusLabel(currentOrder.orderStatus) }}
         </el-descriptions-item>
@@ -155,7 +169,9 @@ const currentOrder = ref<any | null>(null);
 const demoStatus = ref<any>({ demoModeEnabled: false, demoItemNotesEnabled: true });
 
 const pendingStatuses = ['pending_confirm', 'awaiting_delivery', 'delivering'];
-const pendingCount = computed(() => records.value.filter((item) => pendingStatuses.includes(String(item.orderStatus))).length);
+const pendingCount = computed(
+  () => records.value.filter((item) => pendingStatuses.includes(String(item.orderStatus))).length
+);
 const completedCount = computed(() => records.value.filter((item) => String(item.orderStatus) === 'completed').length);
 
 onMounted(() => {

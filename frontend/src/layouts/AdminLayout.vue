@@ -16,6 +16,7 @@
         <RouterLink to="/admin/mail-settings">邮件配置</RouterLink>
         <RouterLink to="/admin/reports">报表导出</RouterLink>
       </nav>
+      <el-button plain @click="passwordDialogVisible = true">修改密码</el-button>
       <el-button type="danger" plain @click="logout">退出后台</el-button>
     </aside>
     <main class="admin-main">
@@ -29,14 +30,33 @@
       </div>
       <router-view />
     </main>
+
+    <el-dialog v-model="passwordDialogVisible" title="修改密码" width="420px">
+      <el-form :model="passwordForm" label-width="90px">
+        <el-form-item label="旧密码">
+          <el-input v-model="passwordForm.currentPassword" show-password />
+        </el-form-item>
+        <el-form-item label="新密码">
+          <el-input v-model="passwordForm.newPassword" show-password />
+        </el-form-item>
+        <el-form-item label="确认密码">
+          <el-input v-model="passwordForm.confirmPassword" show-password />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="passwordDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="passwordSaving" @click="changePassword">更新密码</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { RouterLink, useRouter } from 'vue-router';
 import AppLogo from '@/components/common/AppLogo.vue';
+import { adminApi } from '@/api/admin';
 import { useAuthStore } from '@/stores/auth';
 
 const authStore = useAuthStore();
@@ -50,6 +70,39 @@ const roleLabel = computed(() => {
   };
   return map[authStore.adminProfile?.roleCode || ''] || '后台成员';
 });
+
+const passwordDialogVisible = ref(false);
+const passwordSaving = ref(false);
+const passwordForm = reactive({ currentPassword: '', newPassword: '', confirmPassword: '' });
+
+async function changePassword() {
+  if (!passwordForm.currentPassword) {
+    ElMessage.warning('请输入旧密码');
+    return;
+  }
+  if (!passwordForm.newPassword || passwordForm.newPassword.length < 6 || passwordForm.newPassword.length > 64) {
+    ElMessage.warning('新密码长度需在 6-64 位之间');
+    return;
+  }
+  if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+    ElMessage.warning('两次输入的新密码不一致');
+    return;
+  }
+  passwordSaving.value = true;
+  try {
+    await adminApi.changeAdminPassword({
+      currentPassword: passwordForm.currentPassword,
+      newPassword: passwordForm.newPassword
+    });
+    ElMessage.success('密码已更新');
+    passwordDialogVisible.value = false;
+    passwordForm.currentPassword = '';
+    passwordForm.newPassword = '';
+    passwordForm.confirmPassword = '';
+  } finally {
+    passwordSaving.value = false;
+  }
+}
 
 function logout() {
   authStore.clearAdminAuth();

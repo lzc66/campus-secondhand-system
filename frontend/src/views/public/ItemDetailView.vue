@@ -81,7 +81,11 @@
 
       <section class="detail-lower">
         <div class="seller glass-card fade-up">
-          <SectionHeading title="卖家信息" description="下单前可先了解卖家信息，也可以下单后再进一步沟通。" tag="Seller" />
+          <SectionHeading
+            title="卖家信息"
+            description="下单前可先了解卖家信息，也可以下单后再进一步沟通。"
+            tag="Seller"
+          />
           <p class="seller-name">{{ detail.seller?.realName || '校园卖家' }}</p>
           <p>{{ detail.seller?.collegeName || '--' }} {{ detail.seller?.majorName || '' }}</p>
           <p>{{ detail.seller?.className || '未填写班级信息' }}</p>
@@ -192,6 +196,7 @@ import { publicApi } from '@/api/public';
 import { userApi } from '@/api/user';
 import { useAuthStore } from '@/stores/auth';
 import type { ItemDetail, ItemSummary, PublicComment } from '@/types/api';
+import { isDemoTitle } from '@/utils/demo';
 import { formatDateTime, formatPrice } from '@/utils/format';
 import { getItemConditionLabel } from '@/utils/status';
 
@@ -231,7 +236,9 @@ const galleryImages = computed(() => {
   return images;
 });
 
-const showDemoNote = computed(() => Boolean(demoStatus.value.demoModeEnabled && demoStatus.value.demoItemNotesEnabled && /^\[(婕旂ず|Demo)\]/.test(detail.value?.title || '')));
+const showDemoNote = computed(() =>
+  Boolean(demoStatus.value.demoModeEnabled && demoStatus.value.demoItemNotesEnabled && isDemoTitle(detail.value?.title))
+);
 
 watch(
   () => route.params.id,
@@ -341,7 +348,7 @@ async function submitOrder() {
     await userApi.createOrder({ itemId: detail.value.itemId, ...orderForm.value });
     ElMessage.success('订单创建成功');
     orderVisible.value = false;
-    router.push('/orders');
+    router.push({ name: 'orders' });
   } finally {
     submittingOrder.value = false;
   }
@@ -405,7 +412,9 @@ async function submitOrder() {
   border-radius: 16px;
   background: transparent;
   cursor: pointer;
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
 }
 .thumb-btn:hover,
 .thumb-btn.active {

@@ -57,8 +57,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/admin/items/**").hasAnyRole("SUPER_ADMIN", "AUDITOR", "OPERATOR")
                         .requestMatchers("/api/v1/admin/orders/**").hasAnyRole("SUPER_ADMIN", "AUDITOR", "OPERATOR")
                         .requestMatchers("/api/v1/admin/dashboard/**").hasAnyRole("SUPER_ADMIN", "AUDITOR", "OPERATOR")
+                        .requestMatchers("/api/v1/admin/demo-mode/**").hasAnyRole("SUPER_ADMIN", "AUDITOR", "OPERATOR")
                         .requestMatchers("/api/v1/admin/reports/**").hasAnyRole("SUPER_ADMIN", "AUDITOR", "OPERATOR")
+                        .requestMatchers("/api/v1/admin/files/**").hasAnyRole("SUPER_ADMIN", "AUDITOR", "OPERATOR")
                         .requestMatchers("/api/v1/admin/auth/me").hasAnyRole("SUPER_ADMIN", "AUDITOR", "OPERATOR")
+                        .requestMatchers("/api/v1/admin/auth/password").hasAnyRole("SUPER_ADMIN", "AUDITOR", "OPERATOR")
                         .requestMatchers("/api/v1/user/**").hasRole("USER")
                         .anyRequest().authenticated())
                 .exceptionHandling(exception -> exception

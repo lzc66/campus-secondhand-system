@@ -1,0 +1,72 @@
+# Java / Maven
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+.m2/
+
+# Maven wrapper
+!.mvn/wrapper/maven-wrapper.properties
+!.mvn/wrapper/maven-wrapper.jar
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Runtime files
+storage/
+uploads/
+tmp/
+temp/
+logs/
+*.pid
+
+# IDE / AI 工具自动生成物
+.idea/
+.vscode/
+.codex/
+*.iml
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Env / local config
+.env
+.env.*
+*.local
+application-local.yml
+application-prod.yml
+application-secret.yml
+
+# npm / pnpm / yarn logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Coverage / reports
+coverage/
+frontend/coverage/
+
+# 文档目录:仅纳入文本类交付物(md/js/py);大体积二进制与第三方参考材料不入库
+doc/*.docx
+doc/*.doc
+doc/*.pdf
+doc/example.txt
+doc/(面向对象需求分析文档-参考案例)超市管理系统需求规格说明书v2.doc
+doc/详细设计文档案例.pdf
+doc/骑行爱好者服务平台的设计与实现（总文档例子模板）.docx
+doc/骑行爱好者服务平台的设计与实现（总文档例子模板）.pdf
+
+# Misc
+*.swp
+*.swo
+*.bak

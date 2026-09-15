@@ -11,7 +11,9 @@
         <h3>{{ item.title }}</h3>
         <span>{{ conditionLabel }}</span>
       </div>
-      <p>{{ item.brand || '校园精选' }}<template v-if="item.model"> / {{ item.model }}</template></p>
+      <p>
+        {{ item.brand || '校园精选' }}<template v-if="item.model"> / {{ item.model }}</template>
+      </p>
       <div v-if="showDemoFlag" class="demo-note">这是一条演示商品，适合在答辩时展示商品卡片、推荐列表和下单入口。</div>
       <div class="meta">
         <strong>{{ formatPrice(item.price) }}</strong>
@@ -25,17 +27,21 @@
 import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
 import type { ItemSummary } from '@/types/api';
+import { isDemoTitle } from '@/utils/demo';
 import { formatPrice } from '@/utils/format';
 import { getItemConditionLabel } from '@/utils/status';
 
-const props = withDefaults(defineProps<{
-  item: ItemSummary;
-  demoNotesEnabled?: boolean;
-}>(), {
-  demoNotesEnabled: false
-});
+const props = withDefaults(
+  defineProps<{
+    item: ItemSummary;
+    demoNotesEnabled?: boolean;
+  }>(),
+  {
+    demoNotesEnabled: false
+  }
+);
 
-const showDemoFlag = computed(() => props.demoNotesEnabled && /^\[(婕旂ず|Demo)\]/.test(props.item.title || ''));
+const showDemoFlag = computed(() => props.demoNotesEnabled && isDemoTitle(props.item.title));
 const conditionLabel = computed(() => getItemConditionLabel(props.item.conditionLevel));
 const tradeModeLabel = computed(() => {
   const map: Record<string, string> = {
@@ -52,7 +58,9 @@ const tradeModeLabel = computed(() => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 .item-card:hover {
   transform: translateY(-6px) rotate(-0.4deg);

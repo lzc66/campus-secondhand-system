@@ -47,6 +47,8 @@ class PublicItemServiceTest {
     private UserMapper userMapper;
     @Mock
     private RecommendationBehaviorService recommendationBehaviorService;
+    @Mock
+    private AdminDemoModeService adminDemoModeService;
 
     @InjectMocks
     private PublicItemServiceImpl publicItemService;
@@ -69,9 +71,9 @@ class PublicItemServiceTest {
         Page<Item> pageResult = new Page<>(1, 10, 1);
         pageResult.setRecords(List.of(item));
         when(itemMapper.selectPage(any(), any())).thenReturn(pageResult);
-        when(itemCategoryMapper.selectById(2L)).thenReturn(ItemCategory.builder().categoryId(2L).categoryName("Digital Devices").build());
+        when(itemCategoryMapper.selectBatchIds(any())).thenReturn(List.of(ItemCategory.builder().categoryId(2L).categoryName("Digital Devices").build()));
         when(itemImageMapper.selectList(any())).thenReturn(List.of(ItemImage.builder().itemId(1L).fileId(8L).sortOrder(0).isCover(1).build()));
-        when(mediaFileMapper.selectById(8L)).thenReturn(MediaFile.builder().fileId(8L).fileUrl("/uploads/item-images/1.png").build());
+        when(mediaFileMapper.selectBatchIds(any())).thenReturn(List.of(MediaFile.builder().fileId(8L).fileUrl("/uploads/item-images/1.png").build()));
 
         var response = publicItemService.listItems(11L, null, "iPad", null, null, null, null, null, "latest", 1, 10);
 

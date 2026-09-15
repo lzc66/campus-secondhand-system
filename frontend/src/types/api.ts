@@ -187,12 +187,12 @@ export interface RecommendationItem {
   score?: number;
 }
 export interface DemoDataSummary {
-  userCount: number;
-  itemCount: number;
-  orderCount: number;
-  wantedPostCount: number;
-  announcementCount: number;
-  pendingRegistrationCount: number;
+  users: number;
+  items: number;
+  orders: number;
+  wantedPosts: number;
+  announcements: number;
+  pendingRegistrations: number;
 }
 
 export interface DemoModeStatus {
@@ -203,9 +203,80 @@ export interface DemoModeStatus {
   demoSummary: DemoDataSummary;
 }
 
+/** 公共端演示模式状态:只包含展示开关,无注入情况与业务统计 */
+export interface PublicDemoModeStatus {
+  demoModeEnabled: boolean;
+  demoItemNotesEnabled: boolean;
+}
+
 export interface DemoDataSeedResult {
   createdCounts: DemoDataSummary;
   totalCounts: DemoDataSummary;
   demoDataSeeded: boolean;
   demoDataSeededAt?: string;
 }
+
+// ---------- 管理端看板 ----------
+
+export interface AdminDashboardOverview {
+  totalUsers: number;
+  activeUsers: number;
+  pendingRegistrationCount: number;
+  totalItems: number;
+  onSaleItemCount: number;
+  totalOrders: number;
+  completedOrderCount: number;
+  totalWantedPosts: number;
+  publishedAnnouncementCount: number;
+  todayNewUsers: number;
+  todayNewItems: number;
+  todayNewOrders: number;
+  todayCompletedAmount: number;
+}
+
+export interface OrderTrendPoint {
+  date: string;
+  createdOrderCount: number;
+  completedOrderCount: number;
+  cancelledOrderCount: number;
+  completedAmount: number;
+}
+
+export interface ItemStatusCount {
+  itemStatus: string;
+  count: number;
+}
+
+export interface CategorySalesRanking {
+  categoryId: number | null;
+  categoryName: string | null;
+  soldQuantity: number;
+  completedOrderCount: number;
+  completedAmount: number;
+}
+
+export interface UserGrowthPoint {
+  date: string;
+  newUserCount: number;
+  cumulativeUserCount: number;
+}
+
+export interface RecentActivity {
+  adminOperationLogId: number | null;
+  adminId: number | null;
+  adminNo: string | null;
+  adminName: string | null;
+  targetType: string | null;
+  targetId: number | null;
+  operationType: string | null;
+  operationDetail: string | null;
+  createdAt: string;
+}
+
+export interface HotKeyword {
+  keyword: string;
+  searchCount: number;
+  categoryId: number | null;
+  categoryName: string | null;
+}
+

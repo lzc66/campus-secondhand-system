@@ -98,7 +98,7 @@ class AdminInitControllerTest {
         @Bean
         JwtProperties jwtProperties() {
             JwtProperties properties = new JwtProperties();
-            properties.setSecret("CampusSecondhandJwtSecretKeyForAdminInit1234567890");
+            properties.setSecret("UnitTestJwtSecretKey-0123456789-ABCDEFGHIJKLMNOPQRSTUVWXYZ");
             properties.setExpirationSeconds(3600);
             return properties;
         }

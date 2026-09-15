@@ -7,15 +7,25 @@
         <p>在后台统一配置通知邮件的发信参数。保存后，注册审核邮件和后续通知邮件都会读取这里的实时配置。</p>
       </div>
       <div class="hero-status">
-        <el-tag :type="settings.enabled ? 'success' : 'info'">{{ settings.enabled ? 'SMTP 已启用' : 'SMTP 未启用' }}</el-tag>
-        <el-tag :type="settings.smtpReady ? 'success' : 'warning'">{{ settings.smtpReady ? '配置完整' : '配置未完成' }}</el-tag>
-        <el-tag :type="settings.passwordConfigured ? 'success' : 'warning'">{{ settings.passwordConfigured ? '密码已保存' : '密码未保存' }}</el-tag>
+        <el-tag :type="settings.enabled ? 'success' : 'info'">{{
+          settings.enabled ? 'SMTP 已启用' : 'SMTP 未启用'
+        }}</el-tag>
+        <el-tag :type="settings.smtpReady ? 'success' : 'warning'">{{
+          settings.smtpReady ? '配置完整' : '配置未完成'
+        }}</el-tag>
+        <el-tag :type="settings.passwordConfigured ? 'success' : 'warning'">{{
+          settings.passwordConfigured ? '密码已保存' : '密码未保存'
+        }}</el-tag>
       </div>
     </div>
 
     <div class="mail-grid">
       <section class="glass-card panel">
-        <SectionHeading title="发送配置" description="保存 SMTP 主机、端口、账号和安全策略。密码留空时会继续沿用后台已保存的值。" tag="SMTP" />
+        <SectionHeading
+          title="发送配置"
+          description="保存 SMTP 主机、端口、账号和安全策略。密码留空时会继续沿用后台已保存的值。"
+          tag="SMTP"
+        />
         <el-form ref="settingsFormRef" :model="form" :rules="rules" label-position="top" class="config-form">
           <div class="switch-row">
             <div>
@@ -40,7 +50,9 @@
             </el-form-item>
             <el-form-item label="SMTP 密码 / 授权码" class="full-width">
               <el-input v-model="form.password" show-password placeholder="留空则保留当前已保存密码" />
-              <div class="field-tip">{{ settings.passwordConfigured ? '后台已保存密码，本次留空不会覆盖。' : '当前还没有保存过密码。' }}</div>
+              <div class="field-tip">
+                {{ settings.passwordConfigured ? '后台已保存密码，本次留空不会覆盖。' : '当前还没有保存过密码。' }}
+              </div>
             </el-form-item>
           </div>
 
@@ -76,7 +88,11 @@
       </section>
 
       <section class="glass-card panel side-panel">
-        <SectionHeading title="状态与测试" description="保存后可以立刻发送测试邮件，验证账号、授权码和网络连通性。" tag="Diagnostics" />
+        <SectionHeading
+          title="状态与测试"
+          description="保存后可以立刻发送测试邮件，验证账号、授权码和网络连通性。"
+          tag="Diagnostics"
+        />
         <div class="state-list">
           <div class="state-item">
             <span>最近更新时间</span>
@@ -102,13 +118,28 @@
             <el-input v-model="testForm.subject" placeholder="例如：校园二手系统 SMTP 测试" />
           </el-form-item>
           <el-form-item label="邮件内容" prop="content">
-            <el-input v-model="testForm.content" type="textarea" :rows="6" placeholder="建议写上当前时间和配置说明，便于确认是否成功收到。" />
+            <el-input
+              v-model="testForm.content"
+              type="textarea"
+              :rows="6"
+              placeholder="建议写上当前时间和配置说明，便于确认是否成功收到。"
+            />
           </el-form-item>
-          <el-button type="primary" class="full-btn" :loading="testing" :disabled="!settings.smtpReady" @click="sendTestMail">
+          <el-button
+            type="primary"
+            class="full-btn"
+            :loading="testing"
+            :disabled="!settings.smtpReady"
+            @click="sendTestMail"
+          >
             发送测试邮件
           </el-button>
           <p class="test-tip">
-            {{ settings.smtpReady ? '当前配置已达到可测试状态。' : '请先补全并保存主机、端口、发件地址，以及认证所需账号密码。' }}
+            {{
+              settings.smtpReady
+                ? '当前配置已达到可测试状态。'
+                : '请先补全并保存主机、端口、发件地址，以及认证所需账号密码。'
+            }}
           </p>
         </el-form>
       </section>

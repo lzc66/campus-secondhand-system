@@ -7,6 +7,7 @@ import com.campus.secondhand.service.ItemCommentService;
 import com.campus.secondhand.vo.publicapi.PublicItemCommentResponse;
 import com.campus.secondhand.vo.user.UserReceivedCommentPageResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -47,7 +48,7 @@ public class UserItemCommentController {
     public ApiResponse<UserReceivedCommentPageResponse> receivedComments(@AuthenticationPrincipal UserPrincipal principal,
                                                                          @RequestParam(required = false) Long itemId,
                                                                          @RequestParam(defaultValue = "1") @Min(value = 1, message = "page must be greater than 0") long page,
-                                                                         @RequestParam(defaultValue = "10") @Min(value = 1, message = "size must be greater than 0") long size) {
+                                                                         @RequestParam(defaultValue = "10") @Min(value = 1, message = "size must be greater than 0") @Max(value = 100, message = "size must be at most 100") long size) {
         return ApiResponse.success(itemCommentService.listReceivedComments(principal, itemId, page, size));
     }
 }

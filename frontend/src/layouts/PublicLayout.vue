@@ -212,7 +212,10 @@ nav a.is-active {
   border: 1px solid var(--line-strong);
   background: rgba(255, 255, 255, 0.72);
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .profile-trigger:hover {

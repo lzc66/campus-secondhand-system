@@ -16,6 +16,7 @@ import com.campus.secondhand.mapper.MediaFileMapper;
 import com.campus.secondhand.mapper.UserMapper;
 import com.campus.secondhand.security.UserPrincipal;
 import com.campus.secondhand.service.ItemCommentService;
+import com.campus.secondhand.service.NotificationService;
 import com.campus.secondhand.vo.publicapi.CommentAuthorResponse;
 import com.campus.secondhand.vo.publicapi.PublicItemCommentPageResponse;
 import com.campus.secondhand.vo.publicapi.PublicItemCommentReplyResponse;
@@ -42,15 +43,18 @@ public class ItemCommentServiceImpl implements ItemCommentService {
     private final ItemMapper itemMapper;
     private final UserMapper userMapper;
     private final MediaFileMapper mediaFileMapper;
+    private final NotificationService notificationService;
 
     public ItemCommentServiceImpl(ItemCommentMapper itemCommentMapper,
                                   ItemMapper itemMapper,
                                   UserMapper userMapper,
-                                  MediaFileMapper mediaFileMapper) {
+                                  MediaFileMapper mediaFileMapper,
+                                  NotificationService notificationService) {
         this.itemCommentMapper = itemCommentMapper;
         this.itemMapper = itemMapper;
         this.userMapper = userMapper;
         this.mediaFileMapper = mediaFileMapper;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -87,6 +91,10 @@ public class ItemCommentServiceImpl implements ItemCommentService {
     @Transactional
     public PublicItemCommentResponse replyComment(UserPrincipal principal, Long commentId, CreateItemCommentRequest request) {
         ItemComment parent = getVisibleComment(commentId);
+        // 只允许回复根评论:对"回复"再回复会生成永不展示的孤儿评论,却照加评论数
+        if (parent.getParentCommentId() != null) {
+            throw new BusinessException(40050, HttpStatus.BAD_REQUEST, "Replies can only target root comments");
+        }
         Item item = getRequiredItem(parent.getItemId());
         if (!Objects.equals(item.getSellerUserId(), principal.getUserId())) {
             throw new BusinessException(40350, HttpStatus.FORBIDDEN, "Only the item seller can reply to comments");
@@ -103,6 +111,10 @@ public class ItemCommentServiceImpl implements ItemCommentService {
                 .build();
         itemCommentMapper.insert(reply);
         increaseItemCommentCount(parent.getItemId());
+        // 卖家回复后通知留言作者(不通知自己)
+        if (!Objects.equals(replyToUser.getUserId(), seller.getUserId())) {
+            notificationService.sendCommentReplied(item, reply, replyToUser.getUserId());
+        }
         return buildThreadResponse(parent, List.of(reply));
     }
 

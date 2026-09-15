@@ -12,6 +12,7 @@ import com.campus.secondhand.mapper.ItemCategoryMapper;
 import com.campus.secondhand.mapper.MediaFileMapper;
 import com.campus.secondhand.mapper.UserMapper;
 import com.campus.secondhand.mapper.WantedPostMapper;
+import com.campus.secondhand.service.AdminDemoModeService;
 import com.campus.secondhand.service.PublicWantedPostService;
 import com.campus.secondhand.vo.publicapi.PublicWantedPostDetailResponse;
 import com.campus.secondhand.vo.publicapi.PublicWantedPostPageResponse;
@@ -34,15 +35,18 @@ public class PublicWantedPostServiceImpl implements PublicWantedPostService {
     private final ItemCategoryMapper itemCategoryMapper;
     private final UserMapper userMapper;
     private final MediaFileMapper mediaFileMapper;
+    private final AdminDemoModeService adminDemoModeService;
 
     public PublicWantedPostServiceImpl(WantedPostMapper wantedPostMapper,
                                        ItemCategoryMapper itemCategoryMapper,
                                        UserMapper userMapper,
-                                       MediaFileMapper mediaFileMapper) {
+                                       MediaFileMapper mediaFileMapper,
+                                       AdminDemoModeService adminDemoModeService) {
         this.wantedPostMapper = wantedPostMapper;
         this.itemCategoryMapper = itemCategoryMapper;
         this.userMapper = userMapper;
         this.mediaFileMapper = mediaFileMapper;
+        this.adminDemoModeService = adminDemoModeService;
     }
 
     @Override
@@ -61,6 +65,9 @@ public class PublicWantedPostServiceImpl implements PublicWantedPostService {
         LambdaQueryWrapper<WantedPost> wrapper = new LambdaQueryWrapper<WantedPost>()
                 .eq(WantedPost::getStatus, WantedPostStatus.OPEN)
                 .isNull(WantedPost::getDeletedAt)
+                .and(!adminDemoModeService.isDemoModeEnabled(), q -> q
+                        .notLike(WantedPost::getTitle, "[演示]%")
+                        .notLike(WantedPost::getTitle, "[Demo]%"))
                 .eq(categoryId != null, WantedPost::getCategoryId, categoryId)
                 .eq(StringUtils.hasText(normalizedBrand), WantedPost::getBrand, normalizedBrand)
                 .and(priceMin != null, q -> q.isNull(WantedPost::getExpectedPriceMax).or().ge(WantedPost::getExpectedPriceMax, priceMin))
@@ -147,7 +154,15 @@ public class PublicWantedPostServiceImpl implements PublicWantedPostService {
                 || (wantedPost.getExpiresAt() != null && !wantedPost.getExpiresAt().isAfter(LocalDateTime.now()))) {
             throw new BusinessException(40470, HttpStatus.NOT_FOUND, "Wanted post not found");
         }
+        // 演示模式关闭时,演示求购帖对外表现为不存在
+        if (!adminDemoModeService.isDemoModeEnabled() && isDemoPrefixedTitle(wantedPost.getTitle())) {
+            throw new BusinessException(40470, HttpStatus.NOT_FOUND, "Wanted post not found");
+        }
         return wantedPost;
+    }
+
+    private boolean isDemoPrefixedTitle(String title) {
+        return title != null && (title.startsWith("[演示]") || title.startsWith("[Demo]"));
     }
 
     private void applySort(LambdaQueryWrapper<WantedPost> wrapper, String sortBy) {

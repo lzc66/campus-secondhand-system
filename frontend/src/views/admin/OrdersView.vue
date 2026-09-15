@@ -37,7 +37,7 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="orderAmount" label="金额" width="120" />
+      <el-table-column prop="totalAmount" label="金额" width="120" />
       <el-table-column label="操作" width="240" fixed="right">
         <template #default="{ row }">
           <el-button link type="primary" @click="showDetail(row.orderId)">详情</el-button>
@@ -66,7 +66,7 @@
       <el-descriptions-item label="订单状态">
         {{ getOrderStatusLabel(currentDetail.orderStatus) }}
       </el-descriptions-item>
-      <el-descriptions-item label="订单金额">{{ currentDetail.orderAmount || '--' }}</el-descriptions-item>
+      <el-descriptions-item label="订单金额">{{ currentDetail.totalAmount || '--' }}</el-descriptions-item>
       <el-descriptions-item label="收货人">{{ currentDetail.receiverName || '--' }}</el-descriptions-item>
       <el-descriptions-item label="联系电话">{{ currentDetail.receiverPhone || '--' }}</el-descriptions-item>
       <el-descriptions-item label="配送地址">{{ currentDetail.deliveryAddress || '--' }}</el-descriptions-item>

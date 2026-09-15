@@ -53,27 +53,48 @@
     </section>
 
     <section class="metric-strip">
-      <div class="metric-card glass-card"><small>分类入口</small><strong>{{ categories.length }}</strong></div>
-      <div class="metric-card glass-card"><small>最新商品</small><strong>{{ latestItems.length }}</strong></div>
-      <div class="metric-card glass-card"><small>近期公告</small><strong>{{ announcements.length }}</strong></div>
-      <div class="metric-card glass-card"><small>热门求购</small><strong>{{ wantedPosts.length }}</strong></div>
+      <div class="metric-card glass-card">
+        <small>分类入口</small><strong>{{ categories.length }}</strong>
+      </div>
+      <div class="metric-card glass-card">
+        <small>最新商品</small><strong>{{ latestItems.length }}</strong>
+      </div>
+      <div class="metric-card glass-card">
+        <small>近期公告</small><strong>{{ announcements.length }}</strong>
+      </div>
+      <div class="metric-card glass-card">
+        <small>热门求购</small><strong>{{ wantedPosts.length }}</strong>
+      </div>
     </section>
 
     <section class="home-section">
-      <SectionHeading title="最新商品" :description="`已接入 ${categories.length} 个分类入口，优先展示最近上架的校园二手物品。`" tag="Fresh In">
+      <SectionHeading
+        title="最新商品"
+        :description="`已接入 ${categories.length} 个分类入口，优先展示最近上架的校园二手物品。`"
+        tag="Fresh In"
+      >
         <RouterLink to="/items">查看全部</RouterLink>
       </SectionHeading>
       <div v-if="latestItems.length" class="item-grid">
         <ItemCard v-for="item in latestItems" :key="item.itemId" :item="item" />
       </div>
-      <EmptyState v-else title="暂无商品" description="当前没有公开在售商品，演示时可以先用用户端发布几件商品再回到首页查看。" />
+      <EmptyState
+        v-else
+        title="暂无商品"
+        description="当前没有公开在售商品，演示时可以先用用户端发布几件商品再回到首页查看。"
+      />
     </section>
 
     <section class="home-columns">
       <div>
         <SectionHeading title="近期公告" description="系统和活动通知集中展示。" tag="Notice" />
         <div v-if="announcements.length" class="notice-list">
-          <RouterLink v-for="notice in announcements" :key="notice.announcementId" to="/announcements" class="notice-card glass-card">
+          <RouterLink
+            v-for="notice in announcements"
+            :key="notice.announcementId"
+            to="/announcements"
+            class="notice-card glass-card"
+          >
             <strong>{{ notice.title }}</strong>
             <p>{{ notice.content }}</p>
           </RouterLink>
@@ -88,7 +109,12 @@
       <div>
         <SectionHeading title="热门求购" description="看看同学们最近在找什么。" tag="Wanted" />
         <div v-if="wantedPosts.length" class="wanted-list">
-          <RouterLink v-for="post in wantedPosts" :key="post.wantedPostId" :to="`/wanted-posts/${post.wantedPostId}`" class="wanted-card glass-card">
+          <RouterLink
+            v-for="post in wantedPosts"
+            :key="post.wantedPostId"
+            :to="`/wanted-posts/${post.wantedPostId}`"
+            class="wanted-card glass-card"
+          >
             <strong>{{ post.title }}</strong>
             <p>{{ post.description || '暂无详细描述' }}</p>
             <span>{{ post.categoryName || '校园求购' }}</span>

@@ -29,7 +29,7 @@ public class UserRecommendationController {
     @GetMapping
     public ApiResponse<UserRecommendationPageResponse> list(@AuthenticationPrincipal UserPrincipal principal,
                                                             @RequestParam(defaultValue = "1") @Min(value = 1, message = "page must be greater than 0") long page,
-                                                            @RequestParam(defaultValue = "10") @Min(value = 1, message = "size must be greater than 0") long size,
+                                                            @RequestParam(defaultValue = "10") @Min(value = 1, message = "size must be greater than 0") @Max(value = 100, message = "size must be at most 100") long size,
                                                             @RequestParam(defaultValue = "false") boolean refresh) {
         return ApiResponse.success(userRecommendationService.listRecommendations(principal, page, size, refresh));
     }

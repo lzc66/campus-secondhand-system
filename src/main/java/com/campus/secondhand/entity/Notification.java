@@ -31,6 +31,7 @@ public class Notification {
     private String title;
     private String content;
     private NotificationSendStatus sendStatus;
+    private Integer retryCount;
     private LocalDateTime sentAt;
     private LocalDateTime readAt;
     private LocalDateTime createdAt;

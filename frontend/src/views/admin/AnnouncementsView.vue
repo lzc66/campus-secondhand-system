@@ -1,12 +1,28 @@
 <template>
   <section class="glass-card panel">
-    <SectionHeading title="公告管理" description="集中维护系统公告的草稿、发布时间、置顶状态和过期时间。" tag="Announcements">
+    <SectionHeading
+      title="公告管理"
+      description="集中维护系统公告的草稿、发布时间、置顶状态和过期时间。"
+      tag="Announcements"
+    >
       <el-button type="primary" @click="openEditor()">新建公告</el-button>
     </SectionHeading>
 
     <div class="toolbar">
-      <el-input v-model="filters.keyword" clearable placeholder="搜索标题关键词" class="toolbar-item" @keyup.enter="fetchList" />
-      <el-select v-model="filters.publishStatus" clearable placeholder="发布状态" class="toolbar-item" @change="handleFilterChange">
+      <el-input
+        v-model="filters.keyword"
+        clearable
+        placeholder="搜索标题关键词"
+        class="toolbar-item"
+        @keyup.enter="fetchList"
+      />
+      <el-select
+        v-model="filters.publishStatus"
+        clearable
+        placeholder="发布状态"
+        class="toolbar-item"
+        @change="handleFilterChange"
+      >
         <el-option label="草稿" value="draft" />
         <el-option label="已发布" value="published" />
         <el-option label="已下线" value="offline" />
@@ -32,8 +48,20 @@
         <template #default="scope">
           <el-button link type="primary" @click="viewDetail(scope.row.announcementId)">详情</el-button>
           <el-button link type="primary" @click="openEditor(scope.row)">编辑</el-button>
-          <el-button v-if="scope.row.publishStatus !== 'published'" link type="success" @click="publish(scope.row.announcementId)">发布</el-button>
-          <el-button v-if="scope.row.publishStatus === 'published'" link type="warning" @click="offline(scope.row.announcementId)">下线</el-button>
+          <el-button
+            v-if="scope.row.publishStatus !== 'published'"
+            link
+            type="success"
+            @click="publish(scope.row.announcementId)"
+            >发布</el-button
+          >
+          <el-button
+            v-if="scope.row.publishStatus === 'published'"
+            link
+            type="warning"
+            @click="offline(scope.row.announcementId)"
+            >下线</el-button
+          >
         </template>
       </el-table-column>
     </el-table>
@@ -50,13 +78,25 @@
   </section>
 
   <el-dialog v-model="editorVisible" :title="currentId ? '编辑公告' : '新建公告'" width="820px" destroy-on-close>
-    <el-alert title="保存时会保留草稿或发布状态；若要正式上线，也可以先保存再点击列表中的发布按钮。" type="info" :closable="false" show-icon />
+    <el-alert
+      title="保存时会保留草稿或发布状态；若要正式上线，也可以先保存再点击列表中的发布按钮。"
+      type="info"
+      :closable="false"
+      show-icon
+    />
     <el-form ref="formRef" :model="form" :rules="rules" label-width="100px" class="editor-form">
       <el-form-item label="公告标题" prop="title">
         <el-input v-model="form.title" maxlength="60" show-word-limit placeholder="例如：宿舍配送时间调整通知" />
       </el-form-item>
       <el-form-item label="公告内容" prop="content">
-        <el-input v-model="form.content" type="textarea" :rows="9" maxlength="2000" show-word-limit placeholder="建议写清生效时间、适用范围、处理方式。" />
+        <el-input
+          v-model="form.content"
+          type="textarea"
+          :rows="9"
+          maxlength="2000"
+          show-word-limit
+          placeholder="建议写清生效时间、适用范围、处理方式。"
+        />
       </el-form-item>
       <div class="editor-grid">
         <el-form-item label="发布状态" prop="publishStatus">
@@ -69,7 +109,12 @@
           <el-switch v-model="form.pinned" inline-prompt active-text="置顶" inactive-text="普通" />
         </el-form-item>
         <el-form-item label="过期时间">
-          <el-date-picker v-model="form.expireAt" type="datetime" value-format="YYYY-MM-DDTHH:mm:ss" placeholder="可选，不填则长期有效" />
+          <el-date-picker
+            v-model="form.expireAt"
+            type="datetime"
+            value-format="YYYY-MM-DDTHH:mm:ss"
+            placeholder="可选，不填则长期有效"
+          />
         </el-form-item>
       </div>
       <div class="preview-card glass-card">

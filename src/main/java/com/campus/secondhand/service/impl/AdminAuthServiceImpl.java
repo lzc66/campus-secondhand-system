@@ -1,6 +1,7 @@
 package com.campus.secondhand.service.impl;
 
 import com.campus.secondhand.common.exception.BusinessException;
+import com.campus.secondhand.dto.admin.AdminChangePasswordRequest;
 import com.campus.secondhand.dto.admin.AdminLoginRequest;
 import com.campus.secondhand.entity.Admin;
 import com.campus.secondhand.entity.LoginLog;
@@ -94,19 +95,40 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         return toProfile(admin);
     }
 
+    @Override
+    public void changePassword(AdminPrincipal principal, AdminChangePasswordRequest request) {
+        Admin admin = adminMapper.selectById(principal.getAdminId());
+        if (admin == null) {
+            throw new BusinessException(40401, HttpStatus.NOT_FOUND, "Admin not found");
+        }
+        if (!passwordEncoder.matches(request.currentPassword(), admin.getPasswordHash())) {
+            throw new BusinessException(40104, HttpStatus.UNAUTHORIZED, "Current password is incorrect");
+        }
+        admin.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        adminMapper.updateById(admin);
+    }
+
     private void saveLoginLog(Long accountId, String loginName, String loginResult, String failReason, int captchaPassed,
                               String ipAddress, String userAgent) {
         LoginLog loginLog = LoginLog.builder()
                 .accountType("admin")
                 .accountId(accountId)
-                .loginName(loginName)
+                // 客户端可控字段一律截断到列长度,防止超长输入在签发 token 前把登录流程打穿
+                .loginName(truncate(loginName, 64))
                 .loginResult(loginResult)
-                .failReason(failReason)
+                .failReason(truncate(failReason, 64))
                 .captchaPassed(captchaPassed)
-                .ipAddress(ipAddress)
-                .userAgent(userAgent)
+                .ipAddress(truncate(ipAddress, 45))
+                .userAgent(truncate(userAgent, 255))
                 .build();
         loginLogMapper.insert(loginLog);
+    }
+
+    private String truncate(String value, int maxLength) {
+        if (value == null || value.length() <= maxLength) {
+            return value;
+        }
+        return value.substring(0, maxLength);
     }
 
     private AdminProfileResponse toProfile(Admin admin) {

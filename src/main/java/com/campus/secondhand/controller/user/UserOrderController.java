@@ -9,6 +9,7 @@ import com.campus.secondhand.service.UserOrderService;
 import com.campus.secondhand.vo.user.UserOrderDetailResponse;
 import com.campus.secondhand.vo.user.UserOrderPageResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -42,7 +43,7 @@ public class UserOrderController {
                                                    @RequestParam(required = false) String role,
                                                    @RequestParam(required = false) String status,
                                                    @RequestParam(defaultValue = "1") @Min(value = 1, message = "page must be greater than 0") long page,
-                                                   @RequestParam(defaultValue = "10") @Min(value = 1, message = "size must be greater than 0") long size) {
+                                                   @RequestParam(defaultValue = "10") @Min(value = 1, message = "size must be greater than 0") @Max(value = 100, message = "size must be at most 100") long size) {
         return ApiResponse.success(userOrderService.listOrders(principal, role, status, page, size));
     }
 
@@ -55,21 +56,21 @@ public class UserOrderController {
     @PostMapping("/{orderId}/confirm")
     public ApiResponse<UserOrderDetailResponse> confirm(@AuthenticationPrincipal UserPrincipal principal,
                                                         @PathVariable Long orderId,
-                                                        @RequestBody(required = false) OrderActionRequest request) {
+                                                        @Valid @RequestBody(required = false) OrderActionRequest request) {
         return ApiResponse.success(userOrderService.confirmOrder(principal, orderId, request));
     }
 
     @PostMapping("/{orderId}/deliver")
     public ApiResponse<UserOrderDetailResponse> deliver(@AuthenticationPrincipal UserPrincipal principal,
                                                         @PathVariable Long orderId,
-                                                        @RequestBody(required = false) OrderActionRequest request) {
+                                                        @Valid @RequestBody(required = false) OrderActionRequest request) {
         return ApiResponse.success(userOrderService.markDelivering(principal, orderId, request));
     }
 
     @PostMapping("/{orderId}/complete")
     public ApiResponse<UserOrderDetailResponse> complete(@AuthenticationPrincipal UserPrincipal principal,
                                                          @PathVariable Long orderId,
-                                                         @RequestBody(required = false) OrderActionRequest request) {
+                                                         @Valid @RequestBody(required = false) OrderActionRequest request) {
         return ApiResponse.success(userOrderService.completeOrder(principal, orderId, request));
     }
 

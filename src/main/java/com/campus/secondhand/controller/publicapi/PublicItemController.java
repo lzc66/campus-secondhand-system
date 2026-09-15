@@ -6,6 +6,7 @@ import com.campus.secondhand.service.PublicItemService;
 import com.campus.secondhand.vo.publicapi.PublicItemDetailResponse;
 import com.campus.secondhand.vo.publicapi.PublicItemPageResponse;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -40,7 +41,7 @@ public class PublicItemController {
             @RequestParam(required = false) String tradeMode,
             @RequestParam(required = false) String sortBy,
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "page must be greater than 0") long page,
-            @RequestParam(defaultValue = "10") @Min(value = 1, message = "size must be greater than 0") long size) {
+            @RequestParam(defaultValue = "10") @Min(value = 1, message = "size must be greater than 0") @Max(value = 100, message = "size must be at most 100") long size) {
         return ApiResponse.success(publicItemService.listItems(
                 principal == null ? null : principal.getUserId(),
                 categoryId,

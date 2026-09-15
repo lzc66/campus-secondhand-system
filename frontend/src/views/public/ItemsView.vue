@@ -1,6 +1,10 @@
 <template>
   <div class="page-shell page-block">
-    <SectionHeading title="商品广场" description="按分类、关键词、价格和交易方式快速筛选校园二手物品。" tag="Marketplace" />
+    <SectionHeading
+      title="商品广场"
+      description="按分类、关键词、价格和交易方式快速筛选校园二手物品。"
+      tag="Marketplace"
+    />
 
     <section class="glass-card filters fade-up">
       <el-form :inline="true" :model="filters" class="filter-form">
@@ -9,7 +13,12 @@
         </el-form-item>
         <el-form-item label="分类">
           <el-select v-model="filters.categoryId" clearable filterable style="width: 170px">
-            <el-option v-for="item in categories" :key="item.categoryId" :label="item.categoryName" :value="item.categoryId" />
+            <el-option
+              v-for="item in categories"
+              :key="item.categoryId"
+              :label="item.categoryName"
+              :value="item.categoryId"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="品牌">
@@ -84,7 +93,12 @@
     </div>
 
     <div v-else-if="records.length" class="item-grid">
-      <ItemCard v-for="item in records" :key="item.itemId" :item="item" :demo-notes-enabled="Boolean(demoStatus.demoModeEnabled && demoStatus.demoItemNotesEnabled)" />
+      <ItemCard
+        v-for="item in records"
+        :key="item.itemId"
+        :item="item"
+        :demo-notes-enabled="Boolean(demoStatus.demoModeEnabled && demoStatus.demoItemNotesEnabled)"
+      />
     </div>
 
     <EmptyState v-else title="没有找到匹配商品" description="换个关键词，或者放宽价格和分类条件再试试。">
@@ -133,10 +147,18 @@ const filters = reactive({
   sortBy: 'latest'
 });
 
-const currentCategoryName = computed(() => categories.value.find((item) => item.categoryId === filters.categoryId)?.categoryName || '--');
+const currentCategoryName = computed(
+  () => categories.value.find((item) => item.categoryId === filters.categoryId)?.categoryName || '--'
+);
 const activeFilterCount = computed(() => {
-  return [filters.categoryId, filters.keyword, filters.brand, filters.priceMin, filters.priceMax, filters.tradeMode]
-    .filter((item) => item !== undefined && item !== null && item !== '').length;
+  return [
+    filters.categoryId,
+    filters.keyword,
+    filters.brand,
+    filters.priceMin,
+    filters.priceMax,
+    filters.tradeMode
+  ].filter((item) => item !== undefined && item !== null && item !== '').length;
 });
 
 onMounted(async () => {

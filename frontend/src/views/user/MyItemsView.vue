@@ -6,7 +6,9 @@
     <el-table :data="records" stripe>
       <el-table-column prop="title" label="商品" min-width="220" />
       <el-table-column prop="categoryName" label="分类" width="120" />
-      <el-table-column prop="price" label="价格" width="120"><template #default="scope">{{ formatPrice(scope.row.price) }}</template></el-table-column>
+      <el-table-column prop="price" label="价格" width="120"
+        ><template #default="scope">{{ formatPrice(scope.row.price) }}</template></el-table-column
+      >
       <el-table-column prop="status" label="状态" width="120" />
       <el-table-column label="操作" width="220">
         <template #default="scope">
@@ -28,12 +30,24 @@ import { formatPrice } from '@/utils/format';
 
 const router = useRouter();
 const records = ref<any[]>([]);
-async function fetchItems() { const data = await userApi.getMyItems({ page: 1, size: 50 }); records.value = data.records || []; }
+async function fetchItems() {
+  const data = await userApi.getMyItems({ page: 1, size: 50 });
+  records.value = data.records || [];
+}
 onMounted(fetchItems);
-function editItem(row: any) { router.push({ path: '/user/publish', query: { editId: String(row.itemId) } }); }
-async function removeItem(itemId: number) { await ElMessageBox.confirm('确认删除该商品？', '提示'); await userApi.deleteItem(itemId); ElMessage.success('商品已删除'); fetchItems(); }
+function editItem(row: any) {
+  router.push({ path: '/user/publish', query: { editId: String(row.itemId) } });
+}
+async function removeItem(itemId: number) {
+  await ElMessageBox.confirm('确认删除该商品？', '提示');
+  await userApi.deleteItem(itemId);
+  ElMessage.success('商品已删除');
+  fetchItems();
+}
 </script>
 
 <style scoped>
-.panel { padding: 24px; }
+.panel {
+  padding: 24px;
+}
 </style>

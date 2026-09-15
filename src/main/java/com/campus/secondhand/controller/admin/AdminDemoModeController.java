@@ -9,6 +9,7 @@ import com.campus.secondhand.vo.admin.DemoModeStatusResponse;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -43,5 +44,11 @@ public class AdminDemoModeController {
     public ApiResponse<DemoModeStatusResponse> update(@AuthenticationPrincipal AdminPrincipal principal,
                                                       @Valid @RequestBody UpdateDemoModeRequest request) {
         return ApiResponse.success(adminDemoModeService.updateSettings(principal, request));
+    }
+
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','OPERATOR')")
+    @DeleteMapping("/clear")
+    public ApiResponse<DemoModeStatusResponse> clear(@AuthenticationPrincipal AdminPrincipal principal) {
+        return ApiResponse.success(adminDemoModeService.clearDemoData(principal));
     }
 }

@@ -41,14 +41,38 @@
     <section class="demo-panel glass-card">
       <div class="demo-header">
         <div>
-          <SectionHeading title="演示模式" description="向系统注入一批离线可用的演示商品、订单、求购、公告和推荐数据。" tag="Demo" />
-          <p class="demo-meta">当前状态：{{ demoStatus.demoModeEnabled ? '已开启' : '已关闭' }}，条目说明：{{ demoStatus.demoItemNotesEnabled ? '已显示' : '已隐藏' }}</p>
+          <SectionHeading
+            title="演示模式"
+            description="向系统注入一批离线可用的演示商品、订单、求购、公告和推荐数据。"
+            tag="Demo"
+          />
+          <p class="demo-meta">
+            当前状态：{{ demoStatus.demoModeEnabled ? '已开启' : '已关闭' }}，条目说明：{{
+              demoStatus.demoItemNotesEnabled ? '已显示' : '已隐藏'
+            }}
+          </p>
         </div>
         <div class="demo-actions">
-          <el-button type="primary" :loading="seedLoading" :disabled="!canManageDemoMode || demoStatus.demoDataSeeded" @click="handleSeedDemoData">
+          <el-button
+            type="primary"
+            :loading="seedLoading"
+            :disabled="!canManageDemoMode || demoStatus.demoDataSeeded"
+            @click="handleSeedDemoData"
+          >
             {{ demoStatus.demoDataSeeded ? '演示数据已注入' : '注入演示数据' }}
           </el-button>
-          <el-button :loading="saveLoading" :disabled="!canManageDemoMode" @click="saveDemoModeSettings">保存开关</el-button>
+          <el-button :loading="saveLoading" :disabled="!canManageDemoMode" @click="saveDemoModeSettings"
+            >保存开关</el-button
+          >
+          <el-button
+            type="danger"
+            plain
+            :loading="clearLoading"
+            :disabled="!canManageDemoMode || !demoStatus.demoDataSeeded"
+            @click="handleClearDemoData"
+          >
+            清理演示数据
+          </el-button>
         </div>
       </div>
 
@@ -80,30 +104,36 @@
       <div class="demo-summary-grid">
         <article class="demo-summary-card">
           <small>演示用户</small>
-          <strong>{{ demoStatus.demoSummary?.userCount || 0 }}</strong>
+          <strong>{{ demoStatus.demoSummary?.users || 0 }}</strong>
         </article>
         <article class="demo-summary-card">
           <small>演示商品</small>
-          <strong>{{ demoStatus.demoSummary?.itemCount || 0 }}</strong>
+          <strong>{{ demoStatus.demoSummary?.items || 0 }}</strong>
         </article>
         <article class="demo-summary-card">
           <small>演示订单</small>
-          <strong>{{ demoStatus.demoSummary?.orderCount || 0 }}</strong>
+          <strong>{{ demoStatus.demoSummary?.orders || 0 }}</strong>
         </article>
         <article class="demo-summary-card">
           <small>待审核样例</small>
-          <strong>{{ demoStatus.demoSummary?.pendingRegistrationCount || 0 }}</strong>
+          <strong>{{ demoStatus.demoSummary?.pendingRegistrations || 0 }}</strong>
         </article>
       </div>
 
-      <p class="demo-meta">演示数据注入时间：{{ demoStatus.demoDataSeededAt ? formatDateTime(demoStatus.demoDataSeededAt) : '未注入' }}</p>
+      <p class="demo-meta">
+        演示数据注入时间：{{ demoStatus.demoDataSeededAt ? formatDateTime(demoStatus.demoDataSeededAt) : '未注入' }}
+      </p>
     </section>
 
     <div class="stats-grid">
       <StatCard label="总用户数" :value="overview.totalUsers || 0" hint="含已审核通过的在校学生。" />
       <StatCard label="在售商品" :value="overview.onSaleItemCount || 0" hint="当前公开交易池中的商品规模。" />
       <StatCard label="总订单数" :value="overview.totalOrders || 0" hint="包含进行中与已完成订单。" />
-      <StatCard label="今日成交额" :value="formatPrice(overview.todayCompletedAmount || 0)" hint="今日已完成订单对应的成交金额。" />
+      <StatCard
+        label="今日成交额"
+        :value="formatPrice(overview.todayCompletedAmount || 0)"
+        hint="今日已完成订单对应的成交金额。"
+      />
     </div>
 
     <div class="chart-grid">
@@ -148,16 +178,20 @@
       <section class="glass-card panel">
         <SectionHeading title="最近后台操作" description="快速回看审核、下架、关闭订单等操作。" tag="Audit" />
         <el-table v-if="activities.length" :data="activities" stripe>
-          <el-table-column prop="operatorName" label="管理员" width="150" />
+          <el-table-column prop="adminName" label="管理员" width="150" />
           <el-table-column label="操作类型" width="150">
             <template #default="scope">{{ labelize(scope.row.operationType, '--') }}</template>
           </el-table-column>
-          <el-table-column prop="operationContent" label="操作内容" min-width="240" />
+          <el-table-column prop="operationDetail" label="操作内容" min-width="240" />
           <el-table-column label="时间" width="180">
             <template #default="scope">{{ formatDateTime(scope.row.createdAt) }}</template>
           </el-table-column>
         </el-table>
-        <EmptyState v-else title="暂无后台操作记录" description="完成审核、公告发布或订单干预后，这里会出现最近操作。" />
+        <EmptyState
+          v-else
+          title="暂无后台操作记录"
+          description="完成审核、公告发布或订单干预后，这里会出现最近操作。"
+        />
       </section>
     </div>
   </div>
@@ -166,28 +200,38 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
 import { RouterLink } from 'vue-router';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import VChart from 'vue-echarts';
 import EmptyState from '@/components/common/EmptyState.vue';
 import SectionHeading from '@/components/common/SectionHeading.vue';
 import StatCard from '@/components/common/StatCard.vue';
 import { adminApi } from '@/api/admin';
+import type {
+  AdminDashboardOverview,
+  CategorySalesRanking,
+  DemoModeStatus,
+  HotKeyword,
+  ItemStatusCount,
+  OrderTrendPoint,
+  RecentActivity,
+  UserGrowthPoint
+} from '@/types/api';
 import { useAuthStore } from '@/stores/auth';
 import { formatDate, formatDateTime, formatPrice, labelize } from '@/utils/format';
 
 const authStore = useAuthStore();
-const overview = ref<any>({});
-const trends = ref<any[]>([]);
-const itemStatus = ref<any[]>([]);
-const categories = ref<any[]>([]);
-const growth = ref<any[]>([]);
-const activities = ref<any[]>([]);
-const keywords = ref<any[]>([]);
-const demoStatus = ref<any>({
+const overview = ref<AdminDashboardOverview>(emptyOverview());
+const trends = ref<OrderTrendPoint[]>([]);
+const itemStatus = ref<ItemStatusCount[]>([]);
+const categories = ref<CategorySalesRanking[]>([]);
+const growth = ref<UserGrowthPoint[]>([]);
+const activities = ref<RecentActivity[]>([]);
+const keywords = ref<HotKeyword[]>([]);
+const demoStatus = ref<DemoModeStatus>({
   demoModeEnabled: false,
   demoItemNotesEnabled: true,
   demoDataSeeded: false,
-  demoSummary: {}
+  demoSummary: { users: 0, items: 0, orders: 0, wantedPosts: 0, announcements: 0, pendingRegistrations: 0 }
 });
 const demoForm = reactive({
   demoModeEnabled: false,
@@ -196,10 +240,31 @@ const demoForm = reactive({
 const isLoading = ref(false);
 const seedLoading = ref(false);
 const saveLoading = ref(false);
+const clearLoading = ref(false);
 const lastRefreshAt = ref('');
 
+function emptyOverview(): AdminDashboardOverview {
+  return {
+    totalUsers: 0,
+    activeUsers: 0,
+    pendingRegistrationCount: 0,
+    totalItems: 0,
+    onSaleItemCount: 0,
+    totalOrders: 0,
+    completedOrderCount: 0,
+    totalWantedPosts: 0,
+    publishedAnnouncementCount: 0,
+    todayNewUsers: 0,
+    todayNewItems: 0,
+    todayNewOrders: 0,
+    todayCompletedAmount: 0
+  };
+}
+
 const canManageDemoMode = computed(() => ['super_admin', 'operator'].includes(authStore.adminProfile?.roleCode || ''));
-const hasAnyData = computed(() => Boolean((overview.value.totalUsers || 0) + (overview.value.totalOrders || 0) + (overview.value.onSaleItemCount || 0)));
+const hasAnyData = computed(() =>
+  Boolean((overview.value.totalUsers || 0) + (overview.value.totalOrders || 0) + (overview.value.onSaleItemCount || 0))
+);
 const lastRefreshText = computed(() => (lastRefreshAt.value ? formatDateTime(lastRefreshAt.value) : '--'));
 
 onMounted(fetchDashboard);
@@ -217,7 +282,7 @@ async function fetchDashboard() {
       adminApi.getHotKeywords({ days: 7, limit: 8 }),
       adminApi.getDemoModeStatus()
     ]);
-    overview.value = a || {};
+    overview.value = a || emptyOverview();
     trends.value = b || [];
     itemStatus.value = c || [];
     categories.value = d || [];
@@ -237,7 +302,9 @@ async function handleSeedDemoData() {
   seedLoading.value = true;
   try {
     const result = await adminApi.seedDemoData();
-    ElMessage.success(`演示数据已准备：新增 ${result.createdCounts.itemCount || 0} 件商品，${result.createdCounts.orderCount || 0} 笔订单`);
+    ElMessage.success(
+      `演示数据已准备：新增 ${result.createdCounts.items || 0} 件商品，${result.createdCounts.orders || 0} 笔订单`
+    );
     await fetchDashboard();
   } finally {
     seedLoading.value = false;
@@ -258,25 +325,47 @@ async function saveDemoModeSettings() {
   }
 }
 
+async function handleClearDemoData() {
+  try {
+    await ElMessageBox.confirm(
+      '将删除全部演示用户、商品、订单、求购、公告、通知与相关文件,且不可恢复。确定继续吗?',
+      '清理演示数据',
+      { type: 'warning', confirmButtonText: '确认清理', cancelButtonText: '取消' }
+    );
+  } catch {
+    return;
+  }
+  clearLoading.value = true;
+  try {
+    await adminApi.clearDemoData();
+    ElMessage.success('演示数据已清理');
+    await fetchDashboard();
+  } finally {
+    clearLoading.value = false;
+  }
+}
+
 const orderOption = computed(() => ({
   tooltip: { trigger: 'axis' },
   legend: { top: 0 },
-  xAxis: { type: 'category', data: trends.value.map((i) => formatDate(i.statDate)) },
+  xAxis: { type: 'category', data: trends.value.map((i) => formatDate(i.date)) },
   yAxis: { type: 'value' },
   series: [
-    { name: '创建', type: 'line', smooth: true, data: trends.value.map((i) => i.createdCount || 0) },
-    { name: '完成', type: 'line', smooth: true, data: trends.value.map((i) => i.completedCount || 0) },
-    { name: '取消', type: 'line', smooth: true, data: trends.value.map((i) => i.cancelledCount || 0) }
+    { name: '创建', type: 'line', smooth: true, data: trends.value.map((i) => i.createdOrderCount || 0) },
+    { name: '完成', type: 'line', smooth: true, data: trends.value.map((i) => i.completedOrderCount || 0) },
+    { name: '取消', type: 'line', smooth: true, data: trends.value.map((i) => i.cancelledOrderCount || 0) }
   ]
 }));
 
 const itemStatusOption = computed(() => ({
   tooltip: { trigger: 'item' },
-  series: [{
-    type: 'pie',
-    radius: ['46%', '72%'],
-    data: itemStatus.value.map((i) => ({ name: labelize(i.itemStatus, '--'), value: i.itemCount }))
-  }]
+  series: [
+    {
+      type: 'pie',
+      radius: ['46%', '72%'],
+      data: itemStatus.value.map((i) => ({ name: labelize(i.itemStatus, '--'), value: i.count }))
+    }
+  ]
 }));
 
 const categoryOption = computed(() => ({
@@ -288,11 +377,22 @@ const categoryOption = computed(() => ({
 
 const userGrowthOption = computed(() => ({
   tooltip: { trigger: 'axis' },
-  xAxis: { type: 'category', data: growth.value.map((i) => formatDate(i.statDate)) },
+  xAxis: { type: 'category', data: growth.value.map((i) => formatDate(i.date)) },
   yAxis: { type: 'value' },
   series: [
-    { name: '新增用户', type: 'bar', data: growth.value.map((i) => i.newUserCount || 0), itemStyle: { color: '#193f3a' } },
-    { name: '累计用户', type: 'line', smooth: true, data: growth.value.map((i) => i.totalUserCount || 0), itemStyle: { color: '#234e77' } }
+    {
+      name: '新增用户',
+      type: 'bar',
+      data: growth.value.map((i) => i.newUserCount || 0),
+      itemStyle: { color: '#193f3a' }
+    },
+    {
+      name: '累计用户',
+      type: 'line',
+      smooth: true,
+      data: growth.value.map((i) => i.cumulativeUserCount || 0),
+      itemStyle: { color: '#234e77' }
+    }
   ]
 }));
 </script>
@@ -308,7 +408,9 @@ const userGrowthOption = computed(() => ({
   gap: 20px;
   align-items: end;
   padding: 26px 28px;
-  background: linear-gradient(135deg, rgba(25, 63, 58, 0.1), rgba(220, 127, 57, 0.08)), linear-gradient(180deg, rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0.18));
+  background:
+    linear-gradient(135deg, rgba(25, 63, 58, 0.1), rgba(220, 127, 57, 0.08)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0.18));
 }
 .hero-copy h2 {
   margin: 10px 0 8px;

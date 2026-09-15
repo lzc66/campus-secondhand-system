@@ -4,7 +4,7 @@
       <AppLogo to="/" />
       <div class="user-box">
         <img v-if="authStore.userProfile?.avatarUrl" :src="authStore.userProfile.avatarUrl" alt="avatar" />
-        <div v-else class="avatar-fallback">{{ authStore.userProfile?.realName?.slice(0,1) || 'U' }}</div>
+        <div v-else class="avatar-fallback">{{ authStore.userProfile?.realName?.slice(0, 1) || 'U' }}</div>
         <div>
           <strong>{{ authStore.userProfile?.realName || '校园用户' }}</strong>
           <p>{{ authStore.userProfile?.studentNo }}</p>
@@ -45,15 +45,69 @@ function logout() {
 </script>
 
 <style scoped>
-.portal-wrap { display: grid; grid-template-columns: 280px 1fr; gap: 22px; padding: 28px 0 34px; }
-.sidebar { padding: 24px; position: sticky; top: 96px; height: fit-content; }
-.user-box { display: flex; gap: 14px; align-items: center; margin: 28px 0 22px; padding: 14px; border-radius: 18px; background: rgba(25, 63, 58, 0.06); }
-.user-box img, .avatar-fallback { width: 54px; height: 54px; border-radius: 18px; object-fit: cover; }
-.avatar-fallback { display: grid; place-items: center; background: linear-gradient(135deg, var(--brand), var(--accent)); color: #fff; font-family: var(--font-display); font-size: 22px; }
-.user-box p { margin: 4px 0 0; color: var(--text-soft); }
-nav { display: grid; gap: 8px; margin-bottom: 22px; }
-nav a { padding: 12px 14px; border-radius: 14px; color: var(--text-soft); }
-nav a.router-link-active { background: var(--brand); color: #fff; }
-.content-area { min-width: 0; }
-@media (max-width: 1024px) { .portal-wrap { grid-template-columns: 1fr; } .sidebar { position: static; } }
+.portal-wrap {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 22px;
+  padding: 28px 0 34px;
+}
+.sidebar {
+  padding: 24px;
+  position: sticky;
+  top: 96px;
+  height: fit-content;
+}
+.user-box {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin: 28px 0 22px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(25, 63, 58, 0.06);
+}
+.user-box img,
+.avatar-fallback {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  object-fit: cover;
+}
+.avatar-fallback {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--brand), var(--accent));
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 22px;
+}
+.user-box p {
+  margin: 4px 0 0;
+  color: var(--text-soft);
+}
+nav {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+nav a {
+  padding: 12px 14px;
+  border-radius: 14px;
+  color: var(--text-soft);
+}
+nav a.router-link-active {
+  background: var(--brand);
+  color: #fff;
+}
+.content-area {
+  min-width: 0;
+}
+@media (max-width: 1024px) {
+  .portal-wrap {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    position: static;
+  }
+}
 </style>

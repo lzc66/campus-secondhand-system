@@ -3,6 +3,7 @@ package com.campus.secondhand.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.campus.secondhand.common.exception.BusinessException;
+import com.campus.secondhand.common.util.JsonUtil;
 import com.campus.secondhand.dto.admin.AnnouncementActionRequest;
 import com.campus.secondhand.dto.admin.SaveAnnouncementRequest;
 import com.campus.secondhand.entity.AdminOperationLog;
@@ -22,8 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -153,13 +156,17 @@ public class AdminAnnouncementServiceImpl implements AdminAnnouncementService {
     }
 
     private void logOperation(Long adminId, Long targetId, String action, String detail) {
-        String operationDetail = "{\"action\":\"" + action + "\"}";
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("action", action);
+        if (detail != null) {
+            payload.put("detail", detail);
+        }
         adminOperationLogMapper.insert(AdminOperationLog.builder()
                 .adminId(adminId)
                 .targetType("announcement")
                 .targetId(targetId)
                 .operationType(action)
-                .operationDetail(operationDetail)
+                .operationDetail(JsonUtil.toJson(payload))
                 .ipAddress(null)
                 .build());
     }

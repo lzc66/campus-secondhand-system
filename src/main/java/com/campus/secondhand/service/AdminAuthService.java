@@ -1,5 +1,6 @@
 package com.campus.secondhand.service;
 
+import com.campus.secondhand.dto.admin.AdminChangePasswordRequest;
 import com.campus.secondhand.dto.admin.AdminLoginRequest;
 import com.campus.secondhand.security.AdminPrincipal;
 import com.campus.secondhand.vo.admin.AdminLoginResponse;
@@ -13,4 +14,6 @@ public interface AdminAuthService {
     AdminLoginResponse login(AdminLoginRequest request, String ipAddress, String userAgent);
 
     AdminProfileResponse getCurrentAdmin(AdminPrincipal principal);
+
+    void changePassword(AdminPrincipal principal, AdminChangePasswordRequest request);
 }

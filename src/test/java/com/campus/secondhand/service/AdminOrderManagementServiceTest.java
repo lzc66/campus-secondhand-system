@@ -52,6 +52,8 @@ class AdminOrderManagementServiceTest {
     private UserMapper userMapper;
     @Mock
     private AdminOperationLogMapper adminOperationLogMapper;
+    @Mock
+    private NotificationService notificationService;
 
     @InjectMocks
     private AdminOrderManagementServiceImpl adminOrderManagementService;
@@ -89,6 +91,7 @@ class AdminOrderManagementServiceTest {
                 User.builder().userId(22L).studentNo("20240002").realName("Bob").phone("13900000000").build()
         ));
         when(orderStatusLogMapper.selectList(org.mockito.ArgumentMatchers.<com.baomidou.mybatisplus.core.conditions.Wrapper<com.campus.secondhand.entity.OrderStatusLog>>any())).thenReturn(List.of());
+        when(itemMapper.update(any(), any())).thenReturn(1);
 
         var response = adminOrderManagementService.cancel(
                 new AdminPrincipal(9001L, "admin1001", "Campus Admin", "admin@campus.local", AdminRoleCode.SUPER_ADMIN),
@@ -98,10 +101,12 @@ class AdminOrderManagementServiceTest {
 
         assertEquals("cancelled", response.orderStatus());
         assertEquals("admin", response.cancelledBy());
+        // 预留商品回到在售(通过条件更新而非整行回写;captor 会同时匹配到 null 实体的自增调用,过滤掉)
         ArgumentCaptor<Item> itemCaptor = ArgumentCaptor.forClass(Item.class);
-        verify(itemMapper).updateById(itemCaptor.capture());
-        assertEquals(1, itemCaptor.getValue().getStock());
-        assertEquals(ItemStatus.ON_SALE, itemCaptor.getValue().getStatus());
+        verify(itemMapper, org.mockito.Mockito.times(2)).update(itemCaptor.capture(), any(com.baomidou.mybatisplus.core.conditions.Wrapper.class));
+        List<Item> updatedEntities = itemCaptor.getAllValues().stream().filter(java.util.Objects::nonNull).toList();
+        assertEquals(1, updatedEntities.size());
+        assertEquals(ItemStatus.ON_SALE, updatedEntities.get(0).getStatus());
         ArgumentCaptor<TradeOrder> orderCaptor = ArgumentCaptor.forClass(TradeOrder.class);
         verify(tradeOrderMapper).updateById(orderCaptor.capture());
         assertEquals(OrderStatus.CANCELLED, orderCaptor.getValue().getOrderStatus());

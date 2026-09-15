@@ -8,9 +8,7 @@ import com.campus.secondhand.entity.AdminOperationLog;
 import com.campus.secondhand.entity.Announcement;
 import com.campus.secondhand.entity.Item;
 import com.campus.secondhand.entity.ItemCategory;
-import com.campus.secondhand.entity.OrderItem;
 import com.campus.secondhand.entity.RegistrationApplication;
-import com.campus.secondhand.entity.SearchHistory;
 import com.campus.secondhand.entity.TradeOrder;
 import com.campus.secondhand.entity.User;
 import com.campus.secondhand.entity.WantedPost;
@@ -120,13 +118,11 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 .ge(Item::getCreatedAt, startOfToday)));
         long todayNewOrders = count(tradeOrderMapper.selectCount(new LambdaQueryWrapper<TradeOrder>()
                 .ge(TradeOrder::getCreatedAt, startOfToday)));
-        BigDecimal todayCompletedAmount = tradeOrderMapper.selectList(new LambdaQueryWrapper<TradeOrder>()
-                        .isNotNull(TradeOrder::getCompletedAt)
-                        .ge(TradeOrder::getCompletedAt, startOfToday))
-                .stream()
-                .map(TradeOrder::getTotalAmount)
-                .filter(Objects::nonNull)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        // SUM 聚合下推到 SQL,避免取回今日全部订单后在内存累加
+        BigDecimal todayCompletedAmount = tradeOrderMapper.selectCompletedAmountSince(startOfToday);
+        if (todayCompletedAmount == null) {
+            todayCompletedAmount = BigDecimal.ZERO;
+        }
 
         return new AdminDashboardOverviewResponse(
                 totalUsers,
@@ -158,16 +154,10 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
         LocalDateTime startDateTime = range.startDate().atStartOfDay();
         LocalDateTime endExclusive = range.endDate().plusDays(1).atStartOfDay();
 
-        List<TradeOrder> orders = tradeOrderMapper.selectList(new LambdaQueryWrapper<TradeOrder>()
-                .and(wrapper -> wrapper
-                        .and(q -> q.ge(TradeOrder::getCreatedAt, startDateTime).lt(TradeOrder::getCreatedAt, endExclusive))
-                        .or().and(q -> q.ge(TradeOrder::getCompletedAt, startDateTime).lt(TradeOrder::getCompletedAt, endExclusive))
-                        .or().and(q -> q.ge(TradeOrder::getCancelledAt, startDateTime).lt(TradeOrder::getCancelledAt, endExclusive))));
-        for (TradeOrder order : orders) {
-            applyCreatedTrend(trendMap, order);
-            applyCompletedTrend(trendMap, order);
-            applyCancelledTrend(trendMap, order);
-        }
+        // GROUP BY DATE(...) 聚合下推,不再取回区间内全部订单在内存统计
+        applyTrendRows(trendMap, tradeOrderMapper.selectCreatedTrend(startDateTime, endExclusive), "created");
+        applyTrendRows(trendMap, tradeOrderMapper.selectCompletedTrend(startDateTime, endExclusive), "completed");
+        applyTrendRows(trendMap, tradeOrderMapper.selectCancelledTrend(startDateTime, endExclusive), "cancelled");
         return trendMap.entrySet().stream()
                 .map(entry -> new AdminDashboardTrendPointResponse(
                         entry.getKey(),
@@ -181,6 +171,12 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
 
     @Override
     public List<AdminDashboardItemStatusResponse> getItemStatusDistribution() {
+        // 一次 GROUP BY 替代 6 次 count 查询
+        Map<String, Long> countMap = itemMapper.selectStatusCounts().stream()
+                .collect(Collectors.toMap(
+                        row -> String.valueOf(row.get("status")),
+                        row -> toLong(row.get("c")),
+                        (a, b) -> a));
         return List.of(
                 ItemStatus.DRAFT,
                 ItemStatus.ON_SALE,
@@ -190,7 +186,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 ItemStatus.DELETED
         ).stream().map(status -> new AdminDashboardItemStatusResponse(
                 status.getValue(),
-                count(itemMapper.selectCount(new LambdaQueryWrapper<Item>().eq(Item::getStatus, status)))
+                countMap.getOrDefault(status.getValue(), 0L)
         )).toList();
     }
 
@@ -229,43 +225,16 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
         int normalizedLimit = normalizeLimit(limit);
         LocalDateTime startDateTime = range.startDate().atStartOfDay();
         LocalDateTime endExclusive = range.endDate().plusDays(1).atStartOfDay();
-        List<TradeOrder> completedOrders = tradeOrderMapper.selectList(new LambdaQueryWrapper<TradeOrder>()
-                .ge(TradeOrder::getCompletedAt, startDateTime)
-                .lt(TradeOrder::getCompletedAt, endExclusive));
-        if (completedOrders.isEmpty()) {
-            return List.of();
-        }
-        Map<Long, TradeOrder> orderMap = completedOrders.stream().collect(Collectors.toMap(TradeOrder::getOrderId, order -> order));
-        List<OrderItem> orderItems = orderItemMapper.selectList(new LambdaQueryWrapper<OrderItem>()
-                .in(OrderItem::getOrderId, orderMap.keySet()));
-        if (orderItems.isEmpty()) {
-            return List.of();
-        }
-        Map<Long, Item> itemMap = loadItems(orderItems.stream().map(OrderItem::getItemId).distinct().toList());
-        Map<Long, ItemCategory> categoryMap = loadCategories(itemMap.values().stream().map(Item::getCategoryId).filter(Objects::nonNull).distinct().toList());
-        Map<Long, CategorySalesAccumulator> accumulatorMap = new LinkedHashMap<>();
-        for (OrderItem orderItem : orderItems) {
-            Item item = itemMap.get(orderItem.getItemId());
-            if (item == null || item.getCategoryId() == null) {
-                continue;
-            }
-            CategorySalesAccumulator accumulator = accumulatorMap.computeIfAbsent(item.getCategoryId(), key -> new CategorySalesAccumulator());
-            accumulator.soldQuantity += orderItem.getQuantity() == null ? 0 : orderItem.getQuantity();
-            accumulator.completedAmount = accumulator.completedAmount.add(defaultAmount(orderItem.getSubtotalAmount()));
-            accumulator.orderIds.add(orderItem.getOrderId());
-        }
-        return accumulatorMap.entrySet().stream()
-                .map(entry -> new AdminDashboardCategorySalesResponse(
-                        entry.getKey(),
-                        categoryMap.containsKey(entry.getKey()) ? categoryMap.get(entry.getKey()).getCategoryName() : null,
-                        entry.getValue().soldQuantity,
-                        entry.getValue().orderIds.size(),
-                        entry.getValue().completedAmount
+        // JOIN + GROUP BY 聚合下推:不再取回区间全部订单/订单项、拼巨型 IN 后内存累加
+        List<Map<String, Object>> rows = orderItemMapper.selectCategorySalesRanking(startDateTime, endExclusive, normalizedLimit);
+        return rows.stream()
+                .map(row -> new AdminDashboardCategorySalesResponse(
+                        toNullableLong(row.get("categoryId")),
+                        row.get("categoryName") == null ? null : String.valueOf(row.get("categoryName")),
+                        toLong(row.get("soldQuantity")),
+                        toLong(row.get("completedOrderCount")),
+                        toBigDecimal(row.get("completedAmount"))
                 ))
-                .sorted(Comparator.comparing(AdminDashboardCategorySalesResponse::completedAmount).reversed()
-                        .thenComparing(AdminDashboardCategorySalesResponse::soldQuantity, Comparator.reverseOrder())
-                        .thenComparing(response -> response.categoryId() == null ? Long.MAX_VALUE : response.categoryId()))
-                .limit(normalizedLimit)
                 .toList();
     }
 
@@ -281,22 +250,20 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
         int normalizedLimit = normalizeLimit(limit);
         LocalDateTime startDateTime = range.startDate().atStartOfDay();
         LocalDateTime endExclusive = range.endDate().plusDays(1).atStartOfDay();
-        List<SearchHistory> histories = searchHistoryMapper.selectList(new LambdaQueryWrapper<SearchHistory>()
-                .ge(SearchHistory::getSearchedAt, startDateTime)
-                .lt(SearchHistory::getSearchedAt, endExclusive));
-        if (histories.isEmpty()) {
-            return List.of();
-        }
+        // 只取回 (关键词, 分类) 去重后的计数行,而非区间内全部搜索记录
+        List<Map<String, Object>> rows = searchHistoryMapper.selectKeywordCategoryCounts(startDateTime, endExclusive);
         Map<String, HotKeywordAccumulator> accumulatorMap = new LinkedHashMap<>();
-        for (SearchHistory history : histories) {
-            String keyword = normalizeKeyword(history.getKeyword());
+        for (Map<String, Object> row : rows) {
+            String keyword = normalizeKeyword(String.valueOf(row.get("keyword")));
             if (!StringUtils.hasText(keyword)) {
                 continue;
             }
+            long count = toLong(row.get("cnt"));
             HotKeywordAccumulator accumulator = accumulatorMap.computeIfAbsent(keyword, key -> new HotKeywordAccumulator());
-            accumulator.searchCount++;
-            if (history.getCategoryId() != null) {
-                accumulator.categoryCountMap.merge(history.getCategoryId(), 1L, Long::sum);
+            accumulator.searchCount += count;
+            Object categoryIdObj = row.get("categoryId");
+            if (categoryIdObj != null) {
+                accumulator.categoryCountMap.merge(toLong(categoryIdObj), count, Long::sum);
             }
         }
         Set<Long> categoryIds = accumulatorMap.values().stream()
@@ -337,14 +304,14 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
         long baseUserCount = count(userMapper.selectCount(new LambdaQueryWrapper<User>()
                 .isNull(User::getDeletedAt)
                 .lt(User::getCreatedAt, startDateTime)));
-        List<User> users = userMapper.selectList(new LambdaQueryWrapper<User>()
-                .isNull(User::getDeletedAt)
-                .ge(User::getCreatedAt, startDateTime)
-                .lt(User::getCreatedAt, endExclusive)
-                .orderByAsc(User::getCreatedAt));
-        Map<LocalDate, Long> dailyMap = users.stream()
-                .filter(user -> user.getCreatedAt() != null)
-                .collect(Collectors.groupingBy(user -> user.getCreatedAt().toLocalDate(), LinkedHashMap::new, Collectors.counting()));
+        // GROUP BY DATE(...) 聚合下推,不再取回区间内全部用户
+        Map<LocalDate, Long> dailyMap = userMapper.selectUserGrowth(startDateTime, endExclusive).stream()
+                .filter(row -> row.get("d") instanceof java.sql.Date)
+                .collect(Collectors.toMap(
+                        row -> ((java.sql.Date) row.get("d")).toLocalDate(),
+                        row -> toLong(row.get("c")),
+                        (a, b) -> a,
+                        LinkedHashMap::new));
         List<AdminDashboardUserGrowthResponse> responses = new java.util.ArrayList<>();
         long cumulative = baseUserCount;
         for (LocalDate date = range.startDate(); !date.isAfter(range.endDate()); date = date.plusDays(1)) {
@@ -363,35 +330,42 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
         return trendMap;
     }
 
-    private void applyCreatedTrend(Map<LocalDate, TrendAccumulator> trendMap, TradeOrder order) {
-        if (order.getCreatedAt() == null) {
-            return;
-        }
-        TrendAccumulator accumulator = trendMap.get(order.getCreatedAt().toLocalDate());
-        if (accumulator != null) {
-            accumulator.createdOrderCount++;
+    private void applyTrendRows(Map<LocalDate, TrendAccumulator> trendMap, List<Map<String, Object>> rows, String kind) {
+        for (Map<String, Object> row : rows) {
+            if (!(row.get("d") instanceof java.sql.Date sqlDate)) {
+                continue;
+            }
+            TrendAccumulator accumulator = trendMap.get(sqlDate.toLocalDate());
+            if (accumulator == null) {
+                continue;
+            }
+            long count = toLong(row.get("c"));
+            switch (kind) {
+                case "created" -> accumulator.createdOrderCount += count;
+                case "completed" -> {
+                    accumulator.completedOrderCount += count;
+                    accumulator.completedAmount = accumulator.completedAmount.add(toBigDecimal(row.get("a")));
+                }
+                case "cancelled" -> accumulator.cancelledOrderCount += count;
+                default -> {
+                }
+            }
         }
     }
 
-    private void applyCompletedTrend(Map<LocalDate, TrendAccumulator> trendMap, TradeOrder order) {
-        if (order.getCompletedAt() == null) {
-            return;
-        }
-        TrendAccumulator accumulator = trendMap.get(order.getCompletedAt().toLocalDate());
-        if (accumulator != null) {
-            accumulator.completedOrderCount++;
-            accumulator.completedAmount = accumulator.completedAmount.add(defaultAmount(order.getTotalAmount()));
-        }
+    private long toLong(Object value) {
+        return value instanceof Number number ? number.longValue() : 0L;
     }
 
-    private void applyCancelledTrend(Map<LocalDate, TrendAccumulator> trendMap, TradeOrder order) {
-        if (order.getCancelledAt() == null) {
-            return;
+    private Long toNullableLong(Object value) {
+        return value instanceof Number number ? number.longValue() : null;
+    }
+
+    private BigDecimal toBigDecimal(Object value) {
+        if (value instanceof BigDecimal decimal) {
+            return decimal;
         }
-        TrendAccumulator accumulator = trendMap.get(order.getCancelledAt().toLocalDate());
-        if (accumulator != null) {
-            accumulator.cancelledOrderCount++;
-        }
+        return value instanceof Number number ? BigDecimal.valueOf(number.longValue()) : BigDecimal.ZERO;
     }
 
     private Map<Long, Admin> loadAdmins(List<Long> adminIds) {
@@ -401,14 +375,6 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
         return adminMapper.selectBatchIds(adminIds.stream().filter(Objects::nonNull).distinct().toList())
                 .stream()
                 .collect(Collectors.toMap(Admin::getAdminId, admin -> admin, (a, b) -> a, LinkedHashMap::new));
-    }
-
-    private Map<Long, Item> loadItems(List<Long> itemIds) {
-        if (itemIds == null || itemIds.isEmpty()) {
-            return Map.of();
-        }
-        return itemMapper.selectBatchIds(itemIds).stream()
-                .collect(Collectors.toMap(Item::getItemId, item -> item, (a, b) -> a, LinkedHashMap::new));
     }
 
     private Map<Long, ItemCategory> loadCategories(List<Long> categoryIds) {
@@ -464,12 +430,6 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
         private long completedOrderCount;
         private long cancelledOrderCount;
         private BigDecimal completedAmount = BigDecimal.ZERO;
-    }
-
-    private static final class CategorySalesAccumulator {
-        private long soldQuantity;
-        private BigDecimal completedAmount = BigDecimal.ZERO;
-        private Set<Long> orderIds = new java.util.HashSet<>();
     }
 
     private static final class HotKeywordAccumulator {

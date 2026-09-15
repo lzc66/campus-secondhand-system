@@ -11,6 +11,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -48,7 +50,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     } else if ("user".equals(accountType)) {
                         authenticateUser(accountId);
                     }
-                } catch (Exception ignored) {
+                } catch (Exception ex) {
+                    // 记录无效/被篡改 token 的来源与原因(不打印完整 token),便于发现爆破与篡改行为
+                    log.warn("Rejected JWT from {} ({}): {}", request.getRemoteAddr(), request.getRequestURI(), ex.getClass().getSimpleName());
                     SecurityContextHolder.clearContext();
                 }
             }

@@ -13,9 +13,7 @@ export async function downloadFile(url: string, token?: string, fallbackFilename
   const blob = await response.blob();
   const disposition = response.headers.get('Content-Disposition') || '';
   const filename = resolveFilename(disposition, fallbackFilename);
-  const objectUrl = URL.createObjectURL(
-    blob.type ? blob : new Blob([blob], { type: 'text/csv;charset=utf-8' })
-  );
+  const objectUrl = URL.createObjectURL(blob.type ? blob : new Blob([blob], { type: 'text/csv;charset=utf-8' }));
   const link = document.createElement('a');
   link.href = objectUrl;
   link.download = filename;
@@ -48,7 +46,10 @@ function resolveFilename(contentDisposition: string, fallbackFilename: string) {
 }
 
 function decodeRfc5987(value: string) {
-  const normalized = value.trim().replace(/^UTF-8''/i, '').replace(/^"(.*)"$/, '$1');
+  const normalized = value
+    .trim()
+    .replace(/^UTF-8''/i, '')
+    .replace(/^"(.*)"$/, '$1');
   try {
     return decodeURIComponent(normalized);
   } catch {

@@ -1,6 +1,8 @@
 package com.campus.secondhand.service.impl;
 
+import com.campus.secondhand.common.api.ErrorCode;
 import com.campus.secondhand.common.exception.BusinessException;
+import com.campus.secondhand.common.util.JsonUtil;
 import com.campus.secondhand.dto.admin.SendSmtpTestEmailRequest;
 import com.campus.secondhand.dto.admin.UpdateSmtpSettingsRequest;
 import com.campus.secondhand.entity.AdminOperationLog;
@@ -85,10 +87,10 @@ public class SmtpSettingsServiceImpl implements SmtpSettingsService {
 
         if (enabled) {
             if (!StringUtils.hasText(host)) {
-                throw new BusinessException(40041, HttpStatus.BAD_REQUEST, "SMTP host is required when SMTP is enabled");
+                throw new BusinessException(ErrorCode.SMTP_HOST_REQUIRED);
             }
             if (port == null || port <= 0) {
-                throw new BusinessException(40042, HttpStatus.BAD_REQUEST, "SMTP port must be a positive number");
+                throw new BusinessException(ErrorCode.SMTP_PORT_INVALID);
             }
             if (authEnabled && !StringUtils.hasText(username)) {
                 throw new BusinessException(40043, HttpStatus.BAD_REQUEST, "SMTP username is required when authentication is enabled");
@@ -132,7 +134,7 @@ public class SmtpSettingsServiceImpl implements SmtpSettingsService {
         try {
             JavaMailSender mailSender = smtpMailSenderFactory.createSender(settings);
             sendUtf8Mail(mailSender, settings.fromAddress(), request.toEmail(), subject, request.content());
-            logOperation(principal.getAdminId(), 0L, "other", "{\"to\":\"" + request.toEmail() + "\"}", ipAddress);
+            logOperation(principal.getAdminId(), 0L, "other", JsonUtil.toJson(Map.of("to", request.toEmail())), ipAddress);
             return new SmtpTestResponse(request.toEmail(), subject, LocalDateTime.now());
         } catch (Exception ex) {
             throw new BusinessException(50041, HttpStatus.INTERNAL_SERVER_ERROR, "SMTP test email failed: " + ex.getMessage());
