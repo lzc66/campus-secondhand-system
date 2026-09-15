@@ -16,14 +16,14 @@ public interface TradeOrderMapper extends BaseMapper<TradeOrder> {
 
     @Select("""
             SELECT COALESCE(SUM(total_amount), 0)
-            FROM trade_orders
+            FROM orders
             WHERE completed_at IS NOT NULL AND completed_at >= #{since}
             """)
     BigDecimal selectCompletedAmountSince(@Param("since") LocalDateTime since);
 
     @Select("""
             SELECT DATE(created_at) AS d, COUNT(*) AS c
-            FROM trade_orders
+            FROM orders
             WHERE created_at >= #{start} AND created_at < #{end}
             GROUP BY DATE(created_at)
             """)
@@ -31,7 +31,7 @@ public interface TradeOrderMapper extends BaseMapper<TradeOrder> {
 
     @Select("""
             SELECT DATE(completed_at) AS d, COUNT(*) AS c, COALESCE(SUM(total_amount), 0) AS a
-            FROM trade_orders
+            FROM orders
             WHERE completed_at IS NOT NULL AND completed_at >= #{start} AND completed_at < #{end}
             GROUP BY DATE(completed_at)
             """)
@@ -39,7 +39,7 @@ public interface TradeOrderMapper extends BaseMapper<TradeOrder> {
 
     @Select("""
             SELECT DATE(cancelled_at) AS d, COUNT(*) AS c
-            FROM trade_orders
+            FROM orders
             WHERE cancelled_at IS NOT NULL AND cancelled_at >= #{start} AND cancelled_at < #{end}
             GROUP BY DATE(cancelled_at)
             """)

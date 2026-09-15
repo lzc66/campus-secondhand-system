@@ -81,6 +81,64 @@ class DatabaseSchemaCompatibilityTest {
         assertEquals(6, categoryCount);
     }
 
+    /**
+     * 执行仪表盘全部聚合语句(与 Mapper 中 @Select 文本一致):
+     * 表名/列名与 Schema 脱节(如把 orders 误写成 trade_orders)会在这里立刻失败,
+     * 而不是等到管理员打开看板时才报 500。
+     */
+    @Test
+    void shouldExecuteDashboardAggregateQueries() {
+        jdbcTemplate.update("INSERT INTO users (student_no, email, password_hash, real_name, college_name, account_status) "
+                + "VALUES ('20269999', 'agg@campus.local', 'hash', 'Agg Tester', 'School', 'active')");
+        Long userId = jdbcTemplate.queryForObject("SELECT user_id FROM users WHERE student_no = '20269999'", Long.class);
+        jdbcTemplate.update("INSERT INTO items (seller_user_id, category_id, title, description, condition_level, price, stock, status) "
+                + "VALUES (?, 1, 'Agg Item', 'desc', 'new', 10.00, 1, 'on_sale')", userId);
+        Long itemId = jdbcTemplate.queryForObject("SELECT item_id FROM items WHERE title = 'Agg Item'", Long.class);
+        jdbcTemplate.update("INSERT INTO orders (order_no, buyer_user_id, seller_user_id, order_type, payment_method, payment_status, "
+                        + "order_status, delivery_type, receiver_name, receiver_phone, delivery_address, total_amount, completed_at) "
+                        + "VALUES ('ORD-AGG-1', ?, ?, 'online_cod', 'cod', 'paid', 'completed', 'face_to_face', 'Agg', '13800000000', 'Dorm', 10.00, NOW())",
+                userId, userId);
+        Long orderId = jdbcTemplate.queryForObject("SELECT order_id FROM orders WHERE order_no = 'ORD-AGG-1'", Long.class);
+        jdbcTemplate.update("INSERT INTO order_items (order_id, item_id, item_title_snapshot, item_price_snapshot, quantity, subtotal_amount) "
+                + "VALUES (?, ?, 'Agg Item', 10.00, 1, 10.00)", orderId, itemId);
+        jdbcTemplate.update("INSERT INTO search_histories (user_id, keyword, category_id, searched_at) VALUES (?, 'agg', 1, NOW())", userId);
+
+        java.sql.Timestamp start = java.sql.Timestamp.valueOf(java.time.LocalDateTime.now().minusDays(1));
+        java.sql.Timestamp end = java.sql.Timestamp.valueOf(java.time.LocalDateTime.now().plusDays(1));
+
+        assertDoesNotThrow(() -> jdbcTemplate.queryForObject(
+                "SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE completed_at IS NOT NULL AND completed_at >= ?",
+                java.math.BigDecimal.class, start));
+        assertDoesNotThrow(() -> jdbcTemplate.queryForList(
+                "SELECT DATE(created_at) AS d, COUNT(*) AS c FROM orders WHERE created_at >= ? AND created_at < ? GROUP BY DATE(created_at)",
+                start, end));
+        assertDoesNotThrow(() -> jdbcTemplate.queryForList(
+                "SELECT DATE(completed_at) AS d, COUNT(*) AS c, COALESCE(SUM(total_amount), 0) AS a FROM orders "
+                        + "WHERE completed_at IS NOT NULL AND completed_at >= ? AND completed_at < ? GROUP BY DATE(completed_at)",
+                start, end));
+        assertDoesNotThrow(() -> jdbcTemplate.queryForList(
+                "SELECT DATE(cancelled_at) AS d, COUNT(*) AS c FROM orders "
+                        + "WHERE cancelled_at IS NOT NULL AND cancelled_at >= ? AND cancelled_at < ? GROUP BY DATE(cancelled_at)",
+                start, end));
+        assertDoesNotThrow(() -> jdbcTemplate.queryForList(
+                "SELECT i.category_id AS categoryId, MAX(c.category_name) AS categoryName, SUM(oi.quantity) AS soldQuantity, "
+                        + "COUNT(DISTINCT oi.order_id) AS completedOrderCount, SUM(oi.subtotal_amount) AS completedAmount "
+                        + "FROM order_items oi JOIN items i ON i.item_id = oi.item_id "
+                        + "LEFT JOIN item_categories c ON c.category_id = i.category_id "
+                        + "JOIN orders o ON o.order_id = oi.order_id "
+                        + "WHERE o.completed_at IS NOT NULL AND o.completed_at >= ? AND o.completed_at < ? "
+                        + "GROUP BY i.category_id ORDER BY completedAmount DESC LIMIT 10",
+                start, end));
+        assertDoesNotThrow(() -> jdbcTemplate.queryForList(
+                "SELECT keyword AS keyword, category_id AS categoryId, COUNT(*) AS cnt FROM search_histories "
+                        + "WHERE searched_at >= ? AND searched_at < ? AND category_id IS NOT NULL GROUP BY keyword, category_id",
+                start, end));
+        assertDoesNotThrow(() -> jdbcTemplate.queryForList("SELECT status AS status, COUNT(*) AS c FROM items GROUP BY status"));
+        assertDoesNotThrow(() -> jdbcTemplate.queryForList(
+                "SELECT DATE(created_at) AS d, COUNT(*) AS c FROM users WHERE deleted_at IS NULL AND created_at >= ? AND created_at < ? GROUP BY DATE(created_at)",
+                start, end));
+    }
+
     private static void executeScript(String path) {
         try (Connection connection = jdbcTemplate.getDataSource().getConnection()) {
             ScriptUtils.executeSqlScript(connection, new EncodedResource(new FileSystemResource(path), StandardCharsets.UTF_8));

@@ -26,7 +26,7 @@ public interface OrderItemMapper extends BaseMapper<OrderItem> {
             FROM order_items oi
             JOIN items i ON i.item_id = oi.item_id
             LEFT JOIN item_categories c ON c.category_id = i.category_id
-            JOIN trade_orders o ON o.order_id = oi.order_id
+            JOIN orders o ON o.order_id = oi.order_id
             WHERE o.completed_at IS NOT NULL
               AND o.completed_at >= #{start} AND o.completed_at < #{end}
             GROUP BY i.category_id
