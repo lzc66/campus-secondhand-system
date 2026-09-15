@@ -137,6 +137,15 @@ class DatabaseSchemaCompatibilityTest {
         assertDoesNotThrow(() -> jdbcTemplate.queryForList(
                 "SELECT DATE(created_at) AS d, COUNT(*) AS c FROM users WHERE deleted_at IS NULL AND created_at >= ? AND created_at < ? GROUP BY DATE(created_at)",
                 start, end));
+        // 登录失败锁定依赖的计数语句(时间列名为 logged_at)
+        jdbcTemplate.update("INSERT INTO login_logs (account_type, login_name, login_result, captcha_passed, ip_address) "
+                + "VALUES ('user', '20269999', 'failure', 1, '127.0.0.1')");
+        assertDoesNotThrow(() -> jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM login_logs WHERE account_type = ? AND login_name = ? AND login_result = 'failure' AND logged_at >= ?",
+                Long.class, "user", "20269999", start));
+        // 用户查重语句(带软删过滤)
+        assertDoesNotThrow(() -> jdbcTemplate.queryForList(
+                "SELECT * FROM users WHERE student_no = ? AND deleted_at IS NULL LIMIT 1", "20269999"));
     }
 
     private static void executeScript(String path) {

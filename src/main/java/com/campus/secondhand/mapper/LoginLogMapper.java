@@ -17,7 +17,7 @@ public interface LoginLogMapper extends BaseMapper<LoginLog> {
             WHERE account_type = #{accountType}
               AND login_name = #{loginName}
               AND login_result = 'failure'
-              AND created_at >= #{since}
+              AND logged_at >= #{since}
             """)
     long countRecentFailures(@Param("accountType") String accountType,
                              @Param("loginName") String loginName,
